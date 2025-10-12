@@ -7,13 +7,8 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 # Import FastAPI app
 from main import app
+from mangum import Mangum
 
-# Vercel expects a handler that can process requests
-# For FastAPI, we need to wrap it with Mangum or use the app directly
-try:
-    from mangum import Mangum
-    handler = Mangum(app, lifespan="off")
-except ImportError:
-    # Fallback: direct app export (may not work perfectly on Vercel)
-    handler = app
+# Create Mangum handler with explicit configuration
+handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
 
