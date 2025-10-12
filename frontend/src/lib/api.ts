@@ -49,7 +49,8 @@ class APIClient {
   private token: string | null = null;
 
   constructor() {
-    this.baseURL = API_URL;
+    // Remove trailing slash from API URL to prevent double slashes
+    this.baseURL = API_URL.replace(/\/$/, "");
     if (typeof window !== "undefined") {
       this.token = localStorage.getItem("token");
     }
