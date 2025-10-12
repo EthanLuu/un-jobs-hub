@@ -49,15 +49,37 @@ async def list_jobs(
             )
         )
     
-    # Count total
-    count_query = select(func.count()).select_from(query.subquery())
+    # Count total - use a simpler approach to avoid nested queries
+    count_query = select(func.count(Job.id)).where(Job.is_active == True)
+
+    if organization:
+        count_query = count_query.where(Job.organization == organization)
+
+    if category:
+        count_query = count_query.where(Job.category == category)
+
+    if grade:
+        count_query = count_query.where(Job.grade == grade)
+
+    if location:
+        count_query = count_query.where(Job.location.ilike(f"%{location}%"))
+
+    if keywords:
+        search_pattern = f"%{keywords}%"
+        count_query = count_query.where(
+            or_(
+                Job.title.ilike(search_pattern),
+                Job.description.ilike(search_pattern)
+            )
+        )
+
     total_result = await db.execute(count_query)
     total = total_result.scalar()
-    
+
     # Paginate
     query = query.offset((page - 1) * page_size).limit(page_size)
     query = query.order_by(Job.created_at.desc())
-    
+
     result = await db.execute(query)
     jobs = result.scalars().all()
     
