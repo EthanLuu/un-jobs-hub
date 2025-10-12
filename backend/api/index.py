@@ -1,14 +1,18 @@
 """Vercel serverless function entry point."""
 import sys
+import os
 from pathlib import Path
 
 # Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent))
+backend_dir = str(Path(__file__).parent.parent)
+sys.path.insert(0, backend_dir)
 
-# Import FastAPI app directly
+# Set working directory for imports
+os.chdir(backend_dir)
+
+# Import FastAPI app
 from main import app
 
-# For Vercel, just export the app directly
 # Vercel's @vercel/python will handle ASGI
-__all__ = ['app']
+handler = app
 

@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "api/index.py",
@@ -9,6 +10,26 @@
     {
       "src": "/(.*)",
       "dest": "api/index.py"
+    }
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.11"
+  },
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 10,
+      "memory": 1024
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }

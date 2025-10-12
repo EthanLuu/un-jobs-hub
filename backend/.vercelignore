@@ -1,0 +1,54 @@
+# Vercel Ignore File - Exclude unnecessary files from deployment
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Database files (SQLite not usable on Vercel)
+*.db
+*.sqlite
+*.sqlite3
+test.db
+
+# Uploads directory (use cloud storage instead)
+uploads/
+
+# Cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Celery & Background tasks (not needed on Vercel)
+crawlers/
+celery_app.py
+
+# Tests
+tests/
+test_*.py
+*_test.py
+pytest.ini
+
+# Documentation
+*.md
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files (use Vercel env vars instead)
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/

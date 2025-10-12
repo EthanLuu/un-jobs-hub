@@ -13,7 +13,9 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     debug: bool = False
 
-    # Database
+    # Database - REQUIRED (no default, must be set explicitly)
+    # Use PostgreSQL for production (Neon, Supabase, etc.)
+    # Example: postgresql://user:pass@host/db
     database_url: str
 
     # Redis
