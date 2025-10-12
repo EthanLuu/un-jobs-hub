@@ -19,13 +19,25 @@ engine_kwargs = {
 
 # Add connection pool settings only for PostgreSQL (SQLite doesn't support these)
 if "postgresql" in db_url:
-    engine_kwargs.update({
-        "pool_size": 2,  # Smaller pool for serverless environments
-        "max_overflow": 5,  # Reduced overflow
-        "pool_pre_ping": True,  # Verify connections before using them
-        "pool_recycle": 300,  # Recycle connections after 5 minutes (better for serverless)
-        "pool_timeout": 30,  # Wait 30 seconds for a connection
-    })
+    # Import os to check if running in serverless environment
+    import os
+    is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+
+    if is_serverless:
+        # For serverless environments, use NullPool to avoid connection conflicts
+        from sqlalchemy.pool import NullPool
+        engine_kwargs["poolclass"] = NullPool
+    else:
+        # For traditional servers, use connection pooling
+        engine_kwargs.update({
+            "pool_size": 5,  # Reasonable pool size
+            "max_overflow": 10,  # Allow burst traffic
+            "pool_pre_ping": True,  # Verify connections before using them
+            "pool_recycle": 300,  # Recycle connections after 5 minutes
+            "pool_timeout": 30,  # Wait 30 seconds for a connection
+            "pool_use_lifo": True,  # Use LIFO to reduce connection switching
+        })
+
     # Add SSL configuration for PostgreSQL (required for Neon and other cloud databases)
     engine_kwargs["connect_args"] = {
         "ssl": "require",  # Required for Neon and most cloud PostgreSQL services
@@ -33,8 +45,8 @@ if "postgresql" in db_url:
             "application_name": "unjobs_api",
             "jit": "off",  # Disable JIT for better compatibility
         },
-        "timeout": 10,  # Connection timeout
-        "command_timeout": 10,  # Command timeout
+        "timeout": 30,  # Increased connection timeout
+        "command_timeout": 60,  # Increased command timeout to 60 seconds
     }
 
 engine = create_async_engine(db_url, **engine_kwargs)
