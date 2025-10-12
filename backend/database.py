@@ -11,11 +11,19 @@ if db_url.startswith("postgresql://"):
 elif db_url.startswith("sqlite:///"):
     db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///")
 
-engine = create_async_engine(
-    db_url,
-    echo=settings.debug,
-    future=True,
-)
+# Configure engine with SSL support for PostgreSQL
+engine_kwargs = {
+    "echo": settings.debug,
+    "future": True,
+}
+
+# Add SSL configuration for PostgreSQL (required for Neon and other cloud databases)
+if "postgresql" in db_url:
+    engine_kwargs["connect_args"] = {
+        "ssl": "require",  # Required for Neon and most cloud PostgreSQL services
+    }
+
+engine = create_async_engine(db_url, **engine_kwargs)
 
 # Create session factory
 AsyncSessionLocal = async_sessionmaker(
