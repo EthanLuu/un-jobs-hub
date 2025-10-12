@@ -20,10 +20,11 @@ engine_kwargs = {
 # Add connection pool settings only for PostgreSQL (SQLite doesn't support these)
 if "postgresql" in db_url:
     engine_kwargs.update({
-        "pool_size": 5,  # Minimum number of connections in the pool
-        "max_overflow": 10,  # Maximum number of connections beyond pool_size
+        "pool_size": 2,  # Smaller pool for serverless environments
+        "max_overflow": 5,  # Reduced overflow
         "pool_pre_ping": True,  # Verify connections before using them
-        "pool_recycle": 3600,  # Recycle connections after 1 hour
+        "pool_recycle": 300,  # Recycle connections after 5 minutes (better for serverless)
+        "pool_timeout": 30,  # Wait 30 seconds for a connection
     })
     # Add SSL configuration for PostgreSQL (required for Neon and other cloud databases)
     engine_kwargs["connect_args"] = {
@@ -32,6 +33,8 @@ if "postgresql" in db_url:
             "application_name": "unjobs_api",
             "jit": "off",  # Disable JIT for better compatibility
         },
+        "timeout": 10,  # Connection timeout
+        "command_timeout": 10,  # Command timeout
     }
 
 engine = create_async_engine(db_url, **engine_kwargs)
@@ -41,8 +44,6 @@ AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
-    autoflush=False,  # Prevent automatic flushes during queries
-    autocommit=False,  # Explicit transaction control
 )
 
 # Base class for models

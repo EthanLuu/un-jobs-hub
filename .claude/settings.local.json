@@ -1,30 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat:*)",
-      "Read(//Users/ethanlu/**)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
       "Bash(make:*)",
-      "Bash(docker-compose down:*)",
-      "Bash(docker compose:*)",
-      "Bash(git clone:*)",
       "Bash(uvicorn:*)",
-      "Bash(source:*)",
       "Bash(npm run dev)",
-      "Bash(pip install pydantic-settings)",
-      "Bash(python3:*)",
-      "Bash(npx shadcn@latest add:*)",
-      "Bash(curl:*)",
-      "Bash(npm run build)",
       "Bash(git add:*)",
-      "Bash(git reset:*)",
-      "Bash(git remote add:*)",
-      "Bash(git push:*)",
+      "Bash(git rm:*)",
       "Bash(git commit:*)",
-      "Bash(rm:*)",
-      "Bash(git restore:*)",
-      "Bash(git checkout:*)"
+      "Bash(python:*)",
+      "Bash(git push:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

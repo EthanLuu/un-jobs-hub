@@ -24,29 +24,37 @@ class BaseCrawler:
         """Save crawled jobs to database."""
         session = self.SessionLocal()
         saved_count = 0
-        
+        updated_count = 0
+
         try:
             for job_data in jobs_data:
                 # Check if job already exists
                 existing_job = session.query(Job).filter(
                     Job.job_id == job_data["job_id"]
                 ).first()
-                
+
                 if existing_job:
                     # Update existing job
                     for key, value in job_data.items():
                         setattr(existing_job, key, value)
                     existing_job.last_scraped = datetime.utcnow()
+                    updated_count += 1
+                    print(f"  更新: {job_data.get('title', 'Unknown')}")
                 else:
                     # Create new job
                     new_job = Job(**job_data)
                     session.add(new_job)
                     saved_count += 1
-            
+                    print(f"  新增: {job_data.get('title', 'Unknown')}")
+
             session.commit()
+            print(f"\n保存结果: 新增 {saved_count} 个, 更新 {updated_count} 个")
             return saved_count
         except Exception as e:
             session.rollback()
+            print(f"保存失败: {str(e)}")
+            import traceback
+            traceback.print_exc()
             raise e
         finally:
             session.close()
