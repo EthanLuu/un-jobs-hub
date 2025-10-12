@@ -5,10 +5,10 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-# Import FastAPI app
+# Import FastAPI app directly
 from main import app
-from mangum import Mangum
 
-# Create Mangum handler with explicit configuration
-handler = Mangum(app, lifespan="off", api_gateway_base_path="/api")
+# For Vercel, just export the app directly
+# Vercel's @vercel/python will handle ASGI
+__all__ = ['app']
 
