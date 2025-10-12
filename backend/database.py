@@ -1,6 +1,8 @@
 """Database connection and session management."""
+import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
+from sqlalchemy.pool import NullPool
 from config import settings
 
 # Create async engine
@@ -11,6 +13,9 @@ if db_url.startswith("postgresql://"):
 elif db_url.startswith("sqlite:///"):
     db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///")
 
+# Check if running in serverless environment
+is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+
 # Configure engine with SSL support for PostgreSQL
 engine_kwargs = {
     "echo": settings.debug,
@@ -19,35 +24,40 @@ engine_kwargs = {
 
 # Add connection pool settings only for PostgreSQL (SQLite doesn't support these)
 if "postgresql" in db_url:
-    # Import os to check if running in serverless environment
-    import os
-    is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
-
     if is_serverless:
-        # For serverless environments, use NullPool to avoid connection conflicts
-        from sqlalchemy.pool import NullPool
+        # For serverless environments, use NullPool and disable prepared statements
         engine_kwargs["poolclass"] = NullPool
+        engine_kwargs["connect_args"] = {
+            "ssl": "require",
+            "server_settings": {
+                "application_name": "unjobs_api",
+                "jit": "off",
+            },
+            "timeout": 30,
+            "command_timeout": 60,
+            "statement_cache_size": 0,  # Disable prepared statement cache
+        }
+        # Critical: Use isolation level to avoid transaction conflicts
+        engine_kwargs["isolation_level"] = "AUTOCOMMIT"
     else:
         # For traditional servers, use connection pooling
         engine_kwargs.update({
-            "pool_size": 5,  # Reasonable pool size
-            "max_overflow": 10,  # Allow burst traffic
-            "pool_pre_ping": True,  # Verify connections before using them
-            "pool_recycle": 300,  # Recycle connections after 5 minutes
-            "pool_timeout": 30,  # Wait 30 seconds for a connection
-            "pool_use_lifo": True,  # Use LIFO to reduce connection switching
+            "pool_size": 5,
+            "max_overflow": 10,
+            "pool_pre_ping": True,
+            "pool_recycle": 300,
+            "pool_timeout": 30,
+            "pool_use_lifo": True,
         })
-
-    # Add SSL configuration for PostgreSQL (required for Neon and other cloud databases)
-    engine_kwargs["connect_args"] = {
-        "ssl": "require",  # Required for Neon and most cloud PostgreSQL services
-        "server_settings": {
-            "application_name": "unjobs_api",
-            "jit": "off",  # Disable JIT for better compatibility
-        },
-        "timeout": 30,  # Increased connection timeout
-        "command_timeout": 60,  # Increased command timeout to 60 seconds
-    }
+        engine_kwargs["connect_args"] = {
+            "ssl": "require",
+            "server_settings": {
+                "application_name": "unjobs_api",
+                "jit": "off",
+            },
+            "timeout": 30,
+            "command_timeout": 60,
+        }
 
 engine = create_async_engine(db_url, **engine_kwargs)
 
@@ -56,6 +66,8 @@ AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
+    autoflush=False,  # Disable autoflush for better control
+    autocommit=False,  # Keep autocommit disabled for session-level control
 )
 
 # Base class for models
@@ -67,7 +79,12 @@ async def get_db():
     async with AsyncSessionLocal() as session:
         try:
             yield session
-            await session.commit()
+            # Only commit if not in AUTOCOMMIT mode
+            if not is_serverless:
+                await session.commit()
+            else:
+                # In serverless, explicitly flush instead of commit
+                await session.flush()
         except Exception:
             await session.rollback()
             raise
