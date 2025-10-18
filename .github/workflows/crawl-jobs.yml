@@ -22,6 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
+          echo "Current directory: $(pwd)"
+          echo "Files in directory:"
+          ls -la
+          echo "Contents of requirements-crawler.txt:"
+          cat requirements-crawler.txt
           pip install --upgrade pip
           pip install -r requirements-crawler.txt
           playwright install --with-deps chromium
