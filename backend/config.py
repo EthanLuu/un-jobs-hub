@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # JWT Authentication
-    secret_key: str
+    secret_key: str = "default-secret-key-for-crawlers-only"  # Must be overridden in production
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
