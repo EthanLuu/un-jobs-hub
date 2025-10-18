@@ -9,7 +9,11 @@ from config import settings
 # Support both PostgreSQL and SQLite
 db_url = settings.database_url
 if db_url.startswith("postgresql://"):
-    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://")
+    # Use psycopg instead of asyncpg for better serverless support
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg://")
+elif db_url.startswith("postgresql+asyncpg://"):
+    # Handle existing asyncpg URLs
+    db_url = db_url.replace("postgresql+asyncpg://", "postgresql+psycopg://")
 elif db_url.startswith("sqlite:///"):
     db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///")
 
@@ -25,20 +29,14 @@ engine_kwargs = {
 # Add connection pool settings only for PostgreSQL (SQLite doesn't support these)
 if "postgresql" in db_url:
     if is_serverless:
-        # For serverless environments, use NullPool and disable prepared statements
+        # For serverless environments, use NullPool
+        # psycopg handles serverless much better than asyncpg
         engine_kwargs["poolclass"] = NullPool
         engine_kwargs["connect_args"] = {
-            "ssl": "require",
-            "server_settings": {
-                "application_name": "unjobs_api",
-                "jit": "off",
-            },
-            "timeout": 30,
-            "command_timeout": 60,
-            "statement_cache_size": 0,  # Disable prepared statement cache
+            "sslmode": "require",
+            "connect_timeout": 10,
+            # Note: Neon doesn't support jit parameter in pooled connections
         }
-        # Critical: Use isolation level to avoid transaction conflicts
-        engine_kwargs["isolation_level"] = "AUTOCOMMIT"
     else:
         # For traditional servers, use connection pooling
         engine_kwargs.update({
@@ -47,16 +45,10 @@ if "postgresql" in db_url:
             "pool_pre_ping": True,
             "pool_recycle": 300,
             "pool_timeout": 30,
-            "pool_use_lifo": True,
         })
         engine_kwargs["connect_args"] = {
-            "ssl": "require",
-            "server_settings": {
-                "application_name": "unjobs_api",
-                "jit": "off",
-            },
-            "timeout": 30,
-            "command_timeout": 60,
+            "sslmode": "require",
+            "connect_timeout": 10,
         }
 
 engine = create_async_engine(db_url, **engine_kwargs)
@@ -66,8 +58,8 @@ AsyncSessionLocal = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
-    autoflush=False,  # Disable autoflush for better control
-    autocommit=False,  # Keep autocommit disabled for session-level control
+    autoflush=False,
+    autocommit=False,
 )
 
 # Base class for models
@@ -79,12 +71,7 @@ async def get_db():
     async with AsyncSessionLocal() as session:
         try:
             yield session
-            # Only commit if not in AUTOCOMMIT mode
-            if not is_serverless:
-                await session.commit()
-            else:
-                # In serverless, explicitly flush instead of commit
-                await session.flush()
+            await session.commit()
         except Exception:
             await session.rollback()
             raise
