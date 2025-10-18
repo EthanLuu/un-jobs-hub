@@ -22,22 +22,16 @@ jobs:
       - name: Install dependencies
         run: |
           echo "========================================="
-          echo "🚀 USING REQUIREMENTS-CRAWLER.TXT (v2)"
+          echo "🚀 USING REQUESTS-BASED CRAWLERS (v3)"
           echo "========================================="
           cd backend
           echo "Current directory: $(pwd)"
-          echo "Files in directory:"
-          ls -la *.txt
-          echo ""
-          echo "Contents of requirements-crawler.txt:"
-          cat requirements-crawler.txt
-          echo ""
           echo "Installing dependencies..."
           pip install --upgrade pip
           pip install --no-cache-dir -r requirements-crawler.txt
           echo ""
-          echo "Installing Playwright browsers..."
-          playwright install --with-deps chromium
+          echo "Installed packages:"
+          pip list | grep -E "requests|beautifulsoup|sqlalchemy|psycopg"
 
       - name: Run crawlers
         env:
