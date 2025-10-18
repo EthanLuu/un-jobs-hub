@@ -16,6 +16,7 @@ class BaseCrawler:
         # Replace async drivers with sync equivalents
         db_url = settings.database_url
         db_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+        db_url = db_url.replace("postgresql+psycopg://", "postgresql://")
         db_url = db_url.replace("sqlite+aiosqlite:///", "sqlite:///")
         self.engine = create_engine(db_url)
         self.SessionLocal = sessionmaker(bind=self.engine)

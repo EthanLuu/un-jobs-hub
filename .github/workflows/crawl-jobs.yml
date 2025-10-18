@@ -9,22 +9,22 @@ on:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           cd backend
-          pip install -r requirements.txt
-          playwright install chromium
-      
+          pip install -r requirements-full.txt
+          playwright install --with-deps chromium
+
       - name: Run crawlers
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -34,10 +34,8 @@ jobs:
           python -c "from crawlers.un_careers_spider import crawl_un_careers_sync; print(crawl_un_careers_sync())"
           python -c "from crawlers.undp_spider import crawl_undp_sync; print(crawl_undp_sync())"
           python -c "from crawlers.unicef_spider import crawl_unicef_sync; print(crawl_unicef_sync())"
-      
+
       - name: Notify on failure
         if: failure()
         run: echo "Crawling failed. Check logs."
-
-
 
