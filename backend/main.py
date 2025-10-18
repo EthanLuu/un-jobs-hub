@@ -1,4 +1,5 @@
 """Main FastAPI application entry point."""
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -10,12 +11,19 @@ from routers import auth, jobs, favorites, resume, match
 # from routers import crawl  # Disabled for quick start
 
 
+# Check if running in serverless environment
+is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     # Startup
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    if not is_serverless:
+        # Only create tables in non-serverless environments
+        # In serverless, tables should be created via migrations
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
     yield
     # Shutdown
     await engine.dispose()

@@ -13,6 +13,9 @@ os.chdir(backend_dir)
 # Import FastAPI app
 from main import app
 
-# Vercel's @vercel/python will handle ASGI
-handler = app
+# Vercel serverless requires Mangum to wrap ASGI app
+from mangum import Mangum
+
+# Export handler for Vercel
+handler = Mangum(app, lifespan="off")
 
