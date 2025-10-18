@@ -10,12 +10,7 @@ sys.path.insert(0, backend_dir)
 # Set working directory for imports
 os.chdir(backend_dir)
 
-# Import FastAPI app
+# Import and export FastAPI app
+# Vercel expects a variable named 'app' that is an ASGI application
 from main import app
-
-# Vercel serverless requires Mangum to wrap ASGI app
-from mangum import Mangum
-
-# Export handler for Vercel
-handler = Mangum(app, lifespan="off")
 
