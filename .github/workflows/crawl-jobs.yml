@@ -22,7 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
-          pip install -r requirements-full.txt
+          pip install --upgrade pip
+          pip install -r requirements-crawler.txt
           playwright install --with-deps chromium
 
       - name: Run crawlers
