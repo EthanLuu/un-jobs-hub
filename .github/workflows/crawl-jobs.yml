@@ -21,14 +21,22 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo "========================================="
+          echo "🚀 USING REQUIREMENTS-CRAWLER.TXT (v2)"
+          echo "========================================="
           cd backend
           echo "Current directory: $(pwd)"
           echo "Files in directory:"
-          ls -la
+          ls -la *.txt
+          echo ""
           echo "Contents of requirements-crawler.txt:"
           cat requirements-crawler.txt
+          echo ""
+          echo "Installing dependencies..."
           pip install --upgrade pip
-          pip install -r requirements-crawler.txt
+          pip install --no-cache-dir -r requirements-crawler.txt
+          echo ""
+          echo "Installing Playwright browsers..."
           playwright install --with-deps chromium
 
       - name: Run crawlers
