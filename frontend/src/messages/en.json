@@ -1,0 +1,61 @@
+{
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "loginDescription": "Sign in to your account to access all features",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "email": "Email address",
+    "password": "Password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "signUpNow": "Sign up now",
+    "createAccount": "Create account",
+    "registerDescription": "Enter your information to get started",
+    "creatingAccount": "Creating account...",
+    "username": "Username",
+    "usernamePlaceholder": "Username (letters, numbers, underscore)",
+    "confirmPassword": "Confirm password",
+    "passwordPlaceholder": "At least 6 characters",
+    "confirmPasswordPlaceholder": "Re-enter password",
+    "passwordStrength": "Password strength",
+    "usernameAvailable": "Username available",
+    "passwordMatch": "Passwords match",
+    "alreadyHaveAccount": "Already have an account?",
+    "signInNow": "Sign in now",
+    "terms": "By signing up, you agree to our",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "required": "Required"
+  },
+  "validation": {
+    "validEmail": "Please enter a valid email address",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "usernameTooShort": "Username must be at least 3 characters",
+    "invalidUsername": "Username can only contain letters, numbers, and underscores",
+    "passwordsDontMatch": "Passwords do not match"
+  },
+  "errors": {
+    "loginFailed": "Login failed, please try again",
+    "invalidCredentials": "Invalid email or password, please check and try again",
+    "accountInactive": "Account has been deactivated, please contact administrator",
+    "networkError": "Network connection failed, please check your network and try again",
+    "signupFailed": "Sign up failed, please try again",
+    "emailExists": "Email already registered, please use another email",
+    "usernameExists": "Username already taken, please choose another username"
+  },
+  "success": {
+    "loginSuccess": "Login successful",
+    "loginWelcomeBack": "Welcome back! Redirecting to profile...",
+    "signupSuccess": "Sign up successful",
+    "signupWelcome": "Welcome aboard! Redirecting to profile..."
+  },
+  "passwordStrength": {
+    "veryWeak": "Very weak",
+    "weak": "Weak",
+    "medium": "Medium",
+    "good": "Good",
+    "strong": "Strong",
+    "veryStrong": "Very strong"
+  }
+}

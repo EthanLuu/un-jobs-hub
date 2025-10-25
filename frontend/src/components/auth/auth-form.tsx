@@ -16,35 +16,33 @@ interface AuthFormProps {
 
 export function AuthForm({ title, description, icon, children, error, footer }: AuthFormProps) {
   return (
-    <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center py-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center">
+    <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center py-8 px-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-1 pb-4">
+          <div className="flex items-center justify-center mb-2">
             <div className="rounded-full bg-primary/10 p-3">
               {icon}
             </div>
           </div>
-          <CardTitle className="text-center text-2xl">{title}</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-center text-2xl font-bold tracking-tight">{title}</CardTitle>
+          <CardDescription className="text-center text-sm">
             {description}
           </CardDescription>
         </CardHeader>
-        <form>
-          <CardContent className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            {children}
-          </CardContent>
-          {footer && (
-            <CardFooter className="flex flex-col space-y-4">
-              {footer}
-            </CardFooter>
+        <CardContent className="space-y-4 pt-2">
+          {error && (
+            <Alert variant="destructive" className="my-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">{error}</AlertDescription>
+            </Alert>
           )}
-        </form>
+          {children}
+        </CardContent>
+        {footer && (
+          <CardFooter className="flex flex-col space-y-4 pt-6 pb-6">
+            {footer}
+          </CardFooter>
+        )}
       </Card>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ export function LoginClient() {
   const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
+  const t = useTranslations();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,6 +62,13 @@ export function LoginClient() {
     }
   };
 
+  // 获取密码强度文本
+  const getPasswordStrengthText = () => {
+    if (!password) return "";
+    if (password.length < 6) return t("validation.passwordTooShort");
+    return "";
+  };
+
   // 处理表单提交
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,13 +76,13 @@ export function LoginClient() {
 
     // 验证邮箱
     if (!validateEmail(email)) {
-      setError("请输入有效的邮箱地址");
+      setError(t("validation.validEmail"));
       return;
     }
 
     // 验证密码
     if (!password || password.length < 6) {
-      setError("密码至少需要6个字符");
+      setError(t("validation.passwordTooShort"));
       return;
     }
 
@@ -91,8 +100,8 @@ export function LoginClient() {
 
       // 显示成功提示
       toast({
-        title: "登录成功",
-        description: "欢迎回来！正在跳转到个人中心...",
+        title: t("success.loginSuccess"),
+        description: t("success.loginWelcomeBack"),
         variant: "success",
       });
 
@@ -103,16 +112,16 @@ export function LoginClient() {
       }, 500);
     } catch (err: any) {
       // 友好的错误提示
-      let errorMessage = "登录失败，请重试";
+      let errorMessage = t("errors.loginFailed");
       
       if (err.message) {
         const msg = err.message.toLowerCase();
         if (msg.includes("incorrect") || msg.includes("invalid")) {
-          errorMessage = "邮箱或密码错误，请检查后重试";
+          errorMessage = t("errors.invalidCredentials");
         } else if (msg.includes("inactive")) {
-          errorMessage = "账户已被停用，请联系管理员";
+          errorMessage = t("errors.accountInactive");
         } else if (msg.includes("network") || msg.includes("fetch")) {
-          errorMessage = "网络连接失败，请检查网络后重试";
+          errorMessage = t("errors.networkError");
         } else {
           errorMessage = err.message;
         }
@@ -122,7 +131,7 @@ export function LoginClient() {
       
       // 也显示一个toast提示
       toast({
-        title: "登录失败",
+        title: t("errors.loginFailed"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -140,8 +149,8 @@ export function LoginClient() {
 
   return (
     <AuthForm
-      title="欢迎回来"
-      description="登录您的账户以访问完整功能"
+      title={t("auth.welcomeBack")}
+      description={t("auth.loginDescription")}
       icon={<LogIn className="h-6 w-6 text-primary" />}
       error={error}
       footer={
@@ -155,10 +164,10 @@ export function LoginClient() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                登录中...
+                {t("auth.signingIn")}
               </>
             ) : (
-              "登录"
+              t("auth.signIn")
             )}
           </Button>
           <div className="relative">
@@ -167,23 +176,23 @@ export function LoginClient() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                或
+                or
               </span>
             </div>
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            还没有账户？{" "}
+            {t("auth.noAccount")}{" "}
             <Link href="/register" className="font-medium text-primary hover:underline">
-              立即注册
+              {t("auth.signUpNow")}
             </Link>
           </p>
         </>
       }
     >
-      <form onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
+      <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">
-            邮箱地址 <span className="text-destructive">*</span>
+            {t("auth.email")} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="email"
@@ -197,28 +206,28 @@ export function LoginClient() {
             autoComplete="email"
           />
           {emailError && (
-            <p className="text-xs text-destructive">{emailError}</p>
+            <p className="text-xs text-destructive mt-1">{emailError}</p>
           )}
         </div>
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">
-              密码 <span className="text-destructive">*</span>
+              {t("auth.password")} <span className="text-destructive">*</span>
             </Label>
             <Link 
               href="/forgot-password" 
               className="text-xs text-primary hover:underline"
               tabIndex={-1}
             >
-              忘记密码？
+              {t("auth.forgotPassword")}
             </Link>
           </div>
           <div className="relative">
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="请输入密码"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -240,6 +249,9 @@ export function LoginClient() {
               )}
             </button>
           </div>
+          {password && getPasswordStrengthText() && (
+            <p className="text-xs text-destructive mt-1">{getPasswordStrengthText()}</p>
+          )}
         </div>
 
         <div className="flex items-center space-x-2">
@@ -251,9 +263,9 @@ export function LoginClient() {
           />
           <label
             htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer select-none"
           >
-            记住我
+            {t("auth.rememberMe")}
           </label>
         </div>
       </form>
