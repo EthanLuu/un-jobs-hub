@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { JobsClient } from "./jobs-client";
 
 export const metadata: Metadata = {
@@ -7,7 +8,11 @@ export const metadata: Metadata = {
 };
 
 export default function JobsPage() {
-  return <JobsClient />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <JobsClient />
+    </Suspense>
+  );
 }
 
 

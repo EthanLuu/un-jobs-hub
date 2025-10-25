@@ -3,14 +3,14 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
-import { User, FileText, Upload, Trash2, CheckCircle, Clock, Briefcase } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { User, FileText } from "lucide-react";
+import { ProfileDisplay } from "@/components/profile/profile-display";
+import { ProfileEditForm } from "@/components/profile/profile-edit-form";
+import { ResumeUpload } from "@/components/profile/resume-upload";
+import { ResumeList } from "@/components/profile/resume-list";
 
 export function ProfileClient() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -40,12 +40,11 @@ export function ProfileClient() {
     }
   );
 
-  const handleProfileUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleProfileUpdate = async (data: { full_name?: string; username: string }) => {
     try {
       await api.updateProfile({
-        full_name: fullName || undefined,
-        username: username || undefined,
+        full_name: data.full_name || undefined,
+        username: data.username || undefined,
       });
       mutateUser();
       setIsEditingProfile(false);
@@ -55,10 +54,7 @@ export function ProfileClient() {
     }
   };
 
-  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleResumeUpload = async (file: File) => {
     setUploadingResume(true);
     try {
       await api.uploadResume(file);
@@ -69,7 +65,6 @@ export function ProfileClient() {
       alert("Failed to upload resume");
     } finally {
       setUploadingResume(false);
-      e.target.value = "";
     }
   };
 
@@ -147,75 +142,20 @@ export function ProfileClient() {
             </CardHeader>
             <CardContent>
               {!isEditingProfile ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-muted-foreground">Email</Label>
-                    <p className="mt-1 font-medium">{user.email}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Username</Label>
-                    <p className="mt-1 font-medium">{user.username}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Full Name</Label>
-                    <p className="mt-1 font-medium">{user.full_name || "Not set"}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Member Since</Label>
-                    <p className="mt-1 font-medium">{formatDate(user.created_at)}</p>
-                  </div>
-                  <Button onClick={() => {
+                <ProfileDisplay
+                  user={user}
+                  onEdit={() => {
                     setFullName(user.full_name || "");
                     setUsername(user.username);
                     setIsEditingProfile(true);
-                  }}>
-                    Edit Profile
-                  </Button>
-                </div>
+                  }}
+                />
               ) : (
-                <form onSubmit={handleProfileUpdate} className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={user.email}
-                      disabled
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="fullName">Full Name</Label>
-                    <Input
-                      id="fullName"
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="submit">Save Changes</Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsEditingProfile(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
+                <ProfileEditForm
+                  user={user}
+                  onSave={handleProfileUpdate}
+                  onCancel={() => setIsEditingProfile(false)}
+                />
               )}
             </CardContent>
           </Card>
@@ -223,111 +163,14 @@ export function ProfileClient() {
 
         <TabsContent value="resumes">
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Upload Resume</CardTitle>
-                <CardDescription>
-                  Upload your resume to get personalized job recommendations
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <Input
-                    id="resume-upload"
-                    type="file"
-                    accept=".pdf,.docx"
-                    onChange={handleResumeUpload}
-                    disabled={uploadingResume}
-                    className="hidden"
-                  />
-                  <Button
-                    onClick={() => document.getElementById("resume-upload")?.click()}
-                    disabled={uploadingResume}
-                  >
-                    <Upload className="mr-2 h-4 w-4" />
-                    {uploadingResume ? "Uploading..." : "Upload Resume"}
-                  </Button>
-                  <p className="text-sm text-muted-foreground">
-                    Accepted formats: PDF, DOCX (Max 10MB)
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>My Resumes</CardTitle>
-                <CardDescription>
-                  Manage your uploaded resumes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {resumes.length === 0 ? (
-                  <div className="py-8 text-center">
-                    <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                    <p className="text-muted-foreground">
-                      No resumes uploaded yet. Upload your first resume to get started!
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {resumes.map((resume: any) => (
-                      <div
-                        key={resume.id}
-                        className="flex items-center justify-between rounded-lg border p-4"
-                      >
-                        <div className="flex items-start gap-4">
-                          <div className="rounded-lg bg-primary/10 p-3">
-                            <FileText className="h-6 w-6 text-primary" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{resume.filename}</h3>
-                              {resume.is_active && (
-                                <Badge variant="default">
-                                  <CheckCircle className="mr-1 h-3 w-3" />
-                                  Active
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                              Uploaded {formatDate(resume.created_at)}
-                            </p>
-                            {resume.skills && resume.skills.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {resume.skills.slice(0, 5).map((skill: string) => (
-                                  <Badge key={skill} variant="outline">
-                                    {skill}
-                                  </Badge>
-                                ))}
-                                {resume.skills.length > 5 && (
-                                  <Badge variant="outline">
-                                    +{resume.skills.length - 5} more
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                            {resume.experience_years && (
-                              <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-                                <Briefcase className="h-4 w-4" />
-                                <span>{resume.experience_years} years experience</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleResumeDelete(resume.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ResumeUpload
+              onUpload={handleResumeUpload}
+              isUploading={uploadingResume}
+            />
+            <ResumeList
+              resumes={resumes}
+              onDelete={handleResumeDelete}
+            />
           </div>
         </TabsContent>
       </Tabs>
