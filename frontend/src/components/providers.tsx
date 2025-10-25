@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { SWRConfig } from "swr";
 import { AuthProvider } from "@/contexts/auth-context";
+import { Toaster } from "@/components/ui/toaster";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -18,6 +19,7 @@ export function Providers({ children }: ProvidersProps) {
     >
       <AuthProvider>
         {children}
+        <Toaster />
       </AuthProvider>
     </SWRConfig>
   );
