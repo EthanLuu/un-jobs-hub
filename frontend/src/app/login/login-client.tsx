@@ -189,9 +189,9 @@ export function LoginClient() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-4">
+      <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="email">
+          <Label htmlFor="email" className="text-sm font-medium">
             {t("auth.email")} <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -212,7 +212,7 @@ export function LoginClient() {
         
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">
+            <Label htmlFor="password" className="text-sm font-medium">
               {t("auth.password")} <span className="text-destructive">*</span>
             </Label>
             <Link 

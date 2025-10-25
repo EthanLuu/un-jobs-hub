@@ -29,9 +29,9 @@ export function AuthForm({ title, description, icon, children, error, footer }: 
             {description}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 pt-2">
+        <CardContent className="pt-6 pb-6">
           {error && (
-            <Alert variant="destructive" className="my-4">
+            <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-sm">{error}</AlertDescription>
             </Alert>
