@@ -25,7 +25,7 @@ class Job(Base):
     # Classification
     category = Column(String, index=True)  # Programme Management, Finance, etc.
     grade = Column(String, index=True)  # P-3, P-4, G-5, etc.
-    contract_type = Column(String)  # Fixed-term, Temporary, Consultant
+    contract_type = Column(String, index=True)  # Fixed-term, Temporary, Consultant
     
     # Location
     location = Column(String, index=True)
@@ -34,8 +34,8 @@ class Job(Base):
     
     # Requirements
     language_requirements = Column(JSON)  # {en: required, fr: desirable}
-    education_level = Column(String)
-    years_of_experience = Column(Integer)
+    education_level = Column(String, index=True)
+    years_of_experience = Column(Integer, index=True)
     
     # Application
     apply_url = Column(String, nullable=False)

@@ -17,6 +17,8 @@ import {
   ArrowLeft,
   Building2,
   Languages,
+  GraduationCap,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 import { formatDate, getDaysUntilDeadline } from "@/lib/utils";
@@ -70,6 +72,17 @@ export function JobDetailClient({ jobId }: JobDetailClientProps) {
 
   const daysLeft = job.deadline ? getDaysUntilDeadline(job.deadline) : null;
 
+  // Validate grade - should be in format like P-3, G-5, D-1, NO-A, etc.
+  // Filter out invalid values like dates or other text
+  const isValidGrade = (grade: string | undefined): boolean => {
+    if (!grade) return false;
+    // Valid UN grade patterns: P-X, G-X, D-X, NO-X, FS-X, L-X
+    const gradePattern = /^(P-\d+|G-\d+|D-\d+|NO-[A-Z]|FS-\d+|L-\d+|GS-\d+|UG)$/i;
+    return gradePattern.test(grade.trim());
+  };
+
+  const validGrade = isValidGrade(job.grade) ? job.grade : null;
+
   return (
     <div className="container py-8">
       <div className="mb-6">
@@ -89,7 +102,7 @@ export function JobDetailClient({ jobId }: JobDetailClientProps) {
               <div className="mb-4 flex flex-wrap gap-2">
                 <Badge variant="secondary">{job.organization}</Badge>
                 {job.category && <Badge variant="outline">{job.category}</Badge>}
-                {job.grade && <Badge variant="outline">Grade: {job.grade}</Badge>}
+                {validGrade && <Badge variant="outline">Grade: {validGrade}</Badge>}
                 {daysLeft !== null && (
                   <Badge
                     variant={daysLeft <= 7 ? "destructive" : "default"}
@@ -166,6 +179,28 @@ export function JobDetailClient({ jobId }: JobDetailClientProps) {
                     </div>
                   </div>
                 )}
+                {job.education_level && (
+                  <div className="flex items-start gap-3">
+                    <GraduationCap className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Education Level</p>
+                      <p className="text-sm text-muted-foreground">
+                        {job.education_level}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {job.years_of_experience !== undefined && job.years_of_experience !== null && (
+                  <div className="flex items-start gap-3">
+                    <TrendingUp className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Experience Required</p>
+                      <p className="text-sm text-muted-foreground">
+                        {job.years_of_experience} {job.years_of_experience === 1 ? 'year' : 'years'}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Language Requirements */}
@@ -189,14 +224,56 @@ export function JobDetailClient({ jobId }: JobDetailClientProps) {
                 )}
 
               {/* Description */}
-              <div>
-                <h3 className="mb-3 text-lg font-semibold">Job Description</h3>
+              <div className="rounded-lg border bg-muted/30 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="h-1 w-1 rounded-full bg-primary" />
+                  <h3 className="text-lg font-semibold">Job Description</h3>
+                </div>
                 <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                    {job.description}
-                  </p>
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                    {job.description || "No description available"}
+                  </div>
                 </div>
               </div>
+
+              {/* Responsibilities */}
+              {job.responsibilities && job.responsibilities.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary" />
+                    <h3 className="text-lg font-semibold">Duties and Responsibilities</h3>
+                  </div>
+                  <div className="prose prose-sm max-w-none">
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                      {job.responsibilities}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Qualifications */}
+              {job.qualifications && job.qualifications.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary" />
+                    <h3 className="text-lg font-semibold">Qualifications & Requirements</h3>
+                  </div>
+                  <div className="prose prose-sm max-w-none">
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                      {job.qualifications}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Note for incomplete data */}
+              {(!job.responsibilities || !job.qualifications) && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    💡 Complete job details are available on the official application site. Click the "Apply on Official Site" button above to view the full job posting.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -265,10 +342,10 @@ export function JobDetailClient({ jobId }: JobDetailClientProps) {
                   <span className="font-semibold">{daysLeft}</span>
                 </div>
               )}
-              {job.grade && (
+              {validGrade && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Grade</span>
-                  <span className="font-semibold">{job.grade}</span>
+                  <span className="font-semibold">{validGrade}</span>
                 </div>
               )}
             </CardContent>

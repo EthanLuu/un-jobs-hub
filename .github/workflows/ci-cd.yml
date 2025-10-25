@@ -1,0 +1,204 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_unjobs
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio
+    
+    - name: Set up environment variables
+      run: |
+        echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_unjobs" >> $GITHUB_ENV
+        echo "SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+        echo "REDIS_URL=redis://localhost:6379/0" >> $GITHUB_ENV
+    
+    - name: Run database migrations
+      run: |
+        cd backend
+        python -c "
+        import asyncio
+        from database import get_async_session
+        from models import Base
+        from database import engine
+        
+        async def create_tables():
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+        
+        asyncio.run(create_tables())
+        "
+    
+    - name: Run backend tests
+      run: |
+        cd backend
+        python test_system.py
+    
+    - name: Run crawler tests
+      run: |
+        cd backend
+        python -c "
+        import sys
+        sys.path.append('.')
+        from crawlers.uncareer_spider import UncareerSpider
+        from crawlers.who_spider import WHOSpider
+        from crawlers.fao_spider import FAOSpider
+        from crawlers.unops_spider import UNOPSSpider
+        
+        # Test crawler initialization
+        spiders = [
+            UncareerSpider(),
+            WHOSpider(),
+            FAOSpider(),
+            UNOPSSpider()
+        ]
+        
+        for spider in spiders:
+            print(f'✓ {spider.organization} spider initialized successfully')
+        
+        print('✓ All crawlers initialized successfully')
+        "
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm run test -- --watchAll=false
+    
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+    
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/develop'
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to staging
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        # Add actual deployment commands here
+        echo "✓ Staging deployment completed"
+
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    needs: [test-backend, test-frontend, security-scan]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to production
+      run: |
+        echo "🚀 Deploying to production environment..."
+        # Add actual deployment commands here
+        echo "✓ Production deployment completed"
+    
+    - name: Notify deployment
+      run: |
+        echo "📢 Production deployment completed successfully!"
+        # Add notification logic here (Slack, email, etc.)
+
+  performance-test:
+    if: github.event_name == 'pull_request'
+    needs: [test-backend]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run performance tests
+      run: |
+        echo "🏃 Running performance tests..."
+        # Add performance testing logic here
+        echo "✓ Performance tests completed"

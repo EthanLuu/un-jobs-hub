@@ -6,6 +6,8 @@ export interface Job {
   organization: string;
   job_id: string;
   description: string;
+  responsibilities?: string;
+  qualifications?: string;
   category?: string;
   grade?: string;
   contract_type?: string;
@@ -13,11 +15,16 @@ export interface Job {
   duty_station?: string;
   remote_eligible: string;
   language_requirements?: Record<string, string>;
+  education_level?: string;
+  years_of_experience?: number;
   apply_url: string;
   deadline?: string;
   posted_date?: string;
+  source_url?: string;
   is_active: boolean;
   created_at: string;
+  updated_at?: string;
+  last_scraped?: string;
 }
 
 export interface JobsResponse {
@@ -131,13 +138,15 @@ class APIClient {
     return this.request<Job>(`/api/jobs/${id}`);
   }
 
-  async getFilterOptions(): Promise<{
-    organizations: string[];
-    categories: string[];
-    grades: string[];
-    locations: string[];
-  }> {
-    return this.request("/api/jobs/filters/options");
+  async getFilterOptions() {
+    return this.request<{
+      organizations: string[];
+      categories: string[];
+      grades: string[];
+      locations: string[];
+      education_levels: string[];
+      experience_range: { min: number; max: number };
+    }>("/api/jobs/filters/options");
   }
 
   // Favorites endpoints

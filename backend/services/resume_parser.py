@@ -18,16 +18,19 @@ async def parse_resume(file_path: str, content_type: str) -> Dict:
     skills = extract_skills(raw_text)
     experience_years = extract_experience_years(raw_text)
     education = extract_education(raw_text)
+    education_level = extract_education_level(raw_text)
     
     return {
         "raw_text": raw_text,
         "structured_data": {
             "skills": skills,
             "experience_years": experience_years,
-            "education": education
+            "education": education,
+            "education_level": education_level
         },
         "skills": skills,
-        "experience_years": experience_years
+        "experience_years": experience_years,
+        "education_level": education_level
     }
 
 
@@ -123,6 +126,23 @@ def extract_education(text: str) -> List[Dict]:
             })
     
     return education
+
+
+def extract_education_level(text: str) -> str:
+    """Extract highest education level from resume text."""
+    text_lower = text.lower()
+    
+    # Check for highest degree first
+    if any(word in text_lower for word in ['phd', 'doctorate', 'ph.d', 'd.phil']):
+        return "Doctorate"
+    elif any(word in text_lower for word in ['master', 'masters', 'msc', 'ma', 'mba', 'm.s', 'm.a']):
+        return "Master's"
+    elif any(word in text_lower for word in ['bachelor', 'bachelors', 'bsc', 'ba', 'b.s', 'b.a']):
+        return "Bachelor's"
+    elif any(word in text_lower for word in ['diploma', 'certificate', 'associate', 'technical']):
+        return "Diploma/Certificate"
+    else:
+        return "Not specified"
 
 
 

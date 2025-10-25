@@ -26,6 +26,7 @@ class Resume(Base):
     embedding = Column(JSON, nullable=True)  # Vector embedding
     skills = Column(JSON, nullable=True)  # Extracted skills
     experience_years = Column(Integer, nullable=True)
+    education_level = Column(String, nullable=True)  # Highest education level
     education = Column(JSON, nullable=True)
     
     # Status

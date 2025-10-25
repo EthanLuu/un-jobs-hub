@@ -12,7 +12,20 @@
       "Bash(python:*)",
       "Bash(git push:*)",
       "Bash(python3:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(cat:*)",
+      "Read(//private/tmp/**)",
+      "Bash(DATABASE_URL=\"\" REDIS_URL=\"\" python3:*)",
+      "Bash(npm update:*)",
+      "Bash(claude-code --version)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker compose:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_uk4eOdBWc9tn@ep-billowing-poetry-adzqclhh-pooler.c-2.us-east-1.aws.neon.tech/neondb\" REDIS_URL=\"\" python3:*)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_uk4eOdBWc9tn@ep-billowing-poetry-adzqclhh-pooler.c-2.us-east-1.aws.neon.tech/neondb\" python3:*)",
+      "WebFetch(domain:careers.un.org)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

@@ -34,6 +34,8 @@ class JobResponse(BaseModel):
     organization: str
     job_id: str
     description: str
+    responsibilities: Optional[str] = None
+    qualifications: Optional[str] = None
     category: Optional[str]
     grade: Optional[str]
     contract_type: Optional[str]
@@ -41,12 +43,17 @@ class JobResponse(BaseModel):
     duty_station: Optional[str]
     remote_eligible: str
     language_requirements: Optional[Dict]
+    education_level: Optional[str] = None
+    years_of_experience: Optional[int] = None
     apply_url: str
     deadline: Optional[date]
     posted_date: Optional[date]
+    source_url: Optional[str] = None
     is_active: bool
     created_at: datetime
-    
+    updated_at: Optional[datetime] = None
+    last_scraped: Optional[datetime] = None
+
     class Config:
         from_attributes = True
 

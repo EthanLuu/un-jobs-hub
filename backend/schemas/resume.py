@@ -18,6 +18,7 @@ class ResumeResponse(BaseModel):
     file_type: str
     skills: Optional[List[str]]
     experience_years: Optional[int]
+    education_level: Optional[str]
     is_active: bool
     created_at: datetime
     

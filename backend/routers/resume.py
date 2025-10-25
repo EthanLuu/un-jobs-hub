@@ -96,7 +96,8 @@ async def upload_resume(
         raw_text=parsed_data.get("raw_text", ""),
         parsed_data=parsed_data.get("structured_data"),
         skills=parsed_data.get("skills"),
-        experience_years=parsed_data.get("experience_years")
+        experience_years=parsed_data.get("experience_years"),
+        education_level=parsed_data.get("education_level")
     )
     
     db.add(new_resume)
