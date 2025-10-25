@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
-import { Search, Filter, MapPin, Calendar, Briefcase, GraduationCap, TrendingUp, X, ChevronDown, Share2, ArrowUpDown } from "lucide-react";
+import { Search, Filter, MapPin, Calendar, Briefcase, GraduationCap, TrendingUp, X, ChevronDown, Share2, ArrowUpDown, Grid3x3, List, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { formatDate, getDaysUntilDeadline } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ export function JobsClient() {
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "created_at");
   const [sortOrder, setSortOrder] = useState(searchParams.get("order") || "desc");
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   // Update URL when filters change
   useEffect(() => {
@@ -422,6 +423,25 @@ export function JobsClient() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 rounded-md border">
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="h-8"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className="h-8"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </Button>
+                </div>
                 {(searchTerm || activeFiltersCount > 0) && (
                   <>
                     <Badge variant="secondary" className="text-xs">
@@ -574,7 +594,7 @@ export function JobsClient() {
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className={viewMode === "grid" ? "grid gap-6 md:grid-cols-2 lg:grid-cols-3" : "space-y-4"}>
             {data.jobs.map((job) => {
               const daysLeft = job.deadline
                 ? getDaysUntilDeadline(job.deadline)
@@ -586,12 +606,12 @@ export function JobsClient() {
                   className="transition-shadow hover:shadow-md"
                 >
                   <CardHeader>
-                    <div className="flex items-start justify-between">
+                    <div className={`flex items-start justify-between ${viewMode === "grid" ? "flex-col gap-2" : ""}`}>
                       <div className="flex-1">
                         <CardTitle className="mb-2">
                           <Link
                             href={`/jobs/${job.id}`}
-                            className="hover:text-primary"
+                            className="hover:text-primary line-clamp-2"
                           >
                             {job.title}
                           </Link>
@@ -602,7 +622,7 @@ export function JobsClient() {
                       </div>
                       {daysLeft !== null && (
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          className={`rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap ${
                             daysLeft <= 7
                               ? "bg-destructive/10 text-destructive"
                               : "bg-primary/10 text-primary"
@@ -614,47 +634,56 @@ export function JobsClient() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
+                    <p className={`mb-4 text-sm text-muted-foreground ${viewMode === "grid" ? "line-clamp-3" : "line-clamp-2"}`}>
                       {job.description}
                     </p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+                    <div className={`flex flex-wrap gap-x-4 gap-y-2 text-sm ${viewMode === "grid" ? "flex-col" : ""}`}>
                       {job.location && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          <span>{job.location}</span>
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{job.location}</span>
                         </div>
                       )}
                       {isValidGrade(job.grade) && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <Briefcase className="h-4 w-4" />
+                          <Briefcase className="h-4 w-4 flex-shrink-0" />
                           <span>{job.grade}</span>
                         </div>
                       )}
                       {job.contract_type && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <Briefcase className="h-4 w-4" />
+                          <Briefcase className="h-4 w-4 flex-shrink-0" />
                           <span>{job.contract_type}</span>
                         </div>
                       )}
                       {job.education_level && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <GraduationCap className="h-4 w-4" />
+                          <GraduationCap className="h-4 w-4 flex-shrink-0" />
                           <span>{job.education_level}</span>
                         </div>
                       )}
                       {job.years_of_experience !== undefined && job.years_of_experience !== null && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <TrendingUp className="h-4 w-4" />
+                          <TrendingUp className="h-4 w-4 flex-shrink-0" />
                           <span>{job.years_of_experience}+ yrs</span>
                         </div>
                       )}
                       {job.deadline && (
                         <div className="flex items-center gap-1 text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
                           <span>{formatDate(job.deadline)}</span>
                         </div>
                       )}
                     </div>
+                    {viewMode === "grid" && (
+                      <div className="mt-4 pt-4 border-t">
+                        <Link href={`/jobs/${job.id}`}>
+                          <Button variant="outline" size="sm" className="w-full">
+                            View Details
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               );
@@ -663,25 +692,53 @@ export function JobsClient() {
 
           {/* Pagination */}
           {data.total_pages > 1 && (
-            <div className="mt-8 flex justify-center gap-2">
+            <div className="mt-8 flex items-center justify-center gap-2">
               <Button
                 variant="outline"
+                size="sm"
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
               >
+                <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  Page {page} of {data.total_pages}
-                </span>
+              
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, data.total_pages) }, (_, i) => {
+                  let pageNum;
+                  if (data.total_pages <= 5) {
+                    pageNum = i + 1;
+                  } else if (page <= 3) {
+                    pageNum = i + 1;
+                  } else if (page >= data.total_pages - 2) {
+                    pageNum = data.total_pages - 4 + i;
+                  } else {
+                    pageNum = page - 2 + i;
+                  }
+                  
+                  return (
+                    <Button
+                      key={pageNum}
+                      variant={page === pageNum ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(pageNum)}
+                      className="w-9"
+                    >
+                      {pageNum}
+                    </Button>
+                  );
+                })}
               </div>
+
               <Button
                 variant="outline"
+                size="sm"
                 disabled={page === data.total_pages}
                 onClick={() => setPage(page + 1)}
               >
                 Next
+                <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>
           )}
