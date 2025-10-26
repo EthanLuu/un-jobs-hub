@@ -170,9 +170,11 @@ jobs:
         output: 'trivy-results.sarif'
     
     - name: Upload Trivy scan results
+      if: always()
       uses: github/codeql-action/upload-sarif@v2
       with:
         sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
 
   deploy-staging:
     if: github.ref == 'refs/heads/develop'
