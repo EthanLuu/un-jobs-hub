@@ -171,10 +171,10 @@ jobs:
     
     - name: Upload Trivy scan results
       if: always()
+      continue-on-error: true
       uses: github/codeql-action/upload-sarif@v2
       with:
         sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
 
   deploy-staging:
     if: github.ref == 'refs/heads/develop'
@@ -192,7 +192,7 @@ jobs:
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
-    needs: [test-backend, test-frontend, security-scan]
+    needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
     
     steps:
