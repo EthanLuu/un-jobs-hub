@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, User, Languages } from "lucide-react";
@@ -24,19 +23,14 @@ export function Header() {
   const handleLanguageChange = (newLocale: string) => {
     if (newLocale === locale) return;
     
-    // 移除当前 locale
-    let newPath = pathname || '/';
-    if (locale === 'zh') {
-      newPath = newPath.replace(/^\/zh/, '');
-    }
+    // 获取当前路径（不含 locale 前缀）
+    const currentPath = pathname || '/';
     
-    // 添加新 locale
-    if (newLocale === 'zh') {
-      newPath = '/zh' + newPath;
-    }
+    // 构建新的 URL
+    const newUrl = `/${newLocale}${currentPath}`;
     
-    router.push(newPath);
-    router.refresh();
+    // 使用 window.location 来刷新整个页面并切换语言
+    window.location.href = newUrl;
   };
 
   return (

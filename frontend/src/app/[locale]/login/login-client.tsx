@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Link } from '@/i18n/navigation';
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,16 +118,27 @@ export function LoginClient() {
       // 友好的错误提示
       let errorMessage = t("errors.loginFailed");
       
-      if (err.message) {
-        const msg = err.message.toLowerCase();
+      // 尝试提取错误消息
+      let rawMessage = "";
+      if (typeof err === 'string') {
+        rawMessage = err;
+      } else if (err instanceof Error) {
+        rawMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        rawMessage = err.message || err.detail || JSON.stringify(err);
+      }
+      
+      if (rawMessage) {
+        const msg = rawMessage.toLowerCase();
         if (msg.includes("incorrect") || msg.includes("invalid")) {
           errorMessage = t("errors.invalidCredentials");
         } else if (msg.includes("inactive")) {
           errorMessage = t("errors.accountInactive");
-        } else if (msg.includes("network") || msg.includes("fetch")) {
+        } else if (msg.includes("network") || msg.includes("fetch") || msg.includes("failed to fetch")) {
           errorMessage = t("errors.networkError");
-        } else {
-          errorMessage = err.message;
+        } else if (msg.length > 0 && !msg.includes("object") && msg.length < 200) {
+          // 只显示简短、有意义的错误消息
+          errorMessage = rawMessage;
         }
       }
       

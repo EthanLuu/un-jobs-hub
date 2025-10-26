@@ -96,8 +96,35 @@ class APIClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.detail || "An error occurred");
+      try {
+        const error = await response.json();
+        // 处理 FastAPI 的标准错误格式
+        let errorMessage = "An error occurred";
+        
+        if (error.detail) {
+          // 如果 detail 是字符串
+          if (typeof error.detail === 'string') {
+            errorMessage = error.detail;
+          } 
+          // 如果 detail 是数组（FastAPI 的验证错误）
+          else if (Array.isArray(error.detail)) {
+            errorMessage = error.detail.map((err: any) => err.msg || err.message || JSON.stringify(err)).join(', ');
+          }
+          // 如果 detail 是对象
+          else if (typeof error.detail === 'object') {
+            errorMessage = JSON.stringify(error.detail);
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        } else if (error.error) {
+          errorMessage = error.error;
+        }
+        
+        throw new Error(errorMessage);
+      } catch (parseError) {
+        // 如果无法解析 JSON，使用状态文本
+        throw new Error(response.statusText || "An error occurred");
+      }
     }
 
     return response.json();
