@@ -1,24 +1,14 @@
 # Crawler-specific dependencies
-# This includes all dependencies needed for web scraping and crawling
+# Minimal set of dependencies for web scraping
 
 # Core web scraping
-requests==2.31.0
-beautifulsoup4==4.12.2
-lxml==4.9.3
-selenium==4.15.2
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+lxml>=4.9.0
 
-# Database
+# Database (use same versions as main requirements)
 sqlalchemy==2.0.25
 psycopg[binary]==3.1.18
-alembic==1.13.1
-
-# Async support
-aiohttp==3.9.1
-asyncio==3.4.3
-
-# Data processing
-pandas==2.1.4
-numpy==1.24.3
 
 # Utilities
 python-dotenv==1.0.0
@@ -26,10 +16,4 @@ tenacity==8.2.3
 httpx==0.26.0
 
 # Date/time handling
-python-dateutil==2.8.2
-
-# Text processing
-regex==2023.10.3
-
-# Optional: Playwright for JavaScript-heavy sites
-playwright==1.40.0
+python-dateutil>=2.8.0

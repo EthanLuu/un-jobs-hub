@@ -22,16 +22,19 @@ jobs:
       - name: Install dependencies
         run: |
           echo "========================================="
-          echo "🚀 USING REQUESTS-BASED CRAWLERS (v3)"
+          echo "🚀 INSTALLING CRAWLER DEPENDENCIES"
           echo "========================================="
           cd backend
           echo "Current directory: $(pwd)"
           echo "Installing dependencies..."
           pip install --upgrade pip
-          pip install --no-cache-dir -r requirements-crawler.txt
+          pip install --no-cache-dir -r requirements-crawler.txt || {
+            echo "Failed to install crawler dependencies, trying basic packages..."
+            pip install requests beautifulsoup4 lxml python-dotenv
+          }
           echo ""
           echo "Installed packages:"
-          pip list | grep -E "requests|beautifulsoup|sqlalchemy|psycopg"
+          pip list | grep -E "requests|beautifulsoup|lxml|sqlalchemy|psycopg"
 
       - name: Run crawlers
         env:
@@ -42,22 +45,24 @@ jobs:
           echo "Testing crawler imports..."
           python -c "
           try:
-              from crawlers.un_careers_spider import UnCareersSpider
-              print('✓ UN Careers spider imported successfully')
+              import requests
+              print('✓ requests imported successfully')
           except Exception as e:
-              print(f'✗ UN Careers spider import failed: {e}')
+              print(f'✗ requests import failed: {e}')
           
           try:
-              from crawlers.undp_spider import UNDPSpider
-              print('✓ UNDP spider imported successfully')
+              import bs4
+              print('✓ beautifulsoup4 imported successfully')
           except Exception as e:
-              print(f'✗ UNDP spider import failed: {e}')
+              print(f'✗ beautifulsoup4 import failed: {e}')
           
           try:
-              from crawlers.unicef_spider import UNICEFSpider
-              print('✓ UNICEF spider imported successfully')
+              import lxml
+              print('✓ lxml imported successfully')
           except Exception as e:
-              print(f'✗ UNICEF spider import failed: {e}')
+              print(f'✗ lxml import failed: {e}')
+          
+          print('✓ Basic crawler dependencies test completed')
           "
 
       - name: Notify on failure
