@@ -13,6 +13,7 @@ from utils.monitoring import setup_monitoring
 from utils.exceptions import setup_exception_handlers
 from utils.logger import setup_logger
 from utils.config_validator import ConfigValidator
+from utils.rate_limit import RateLimitMiddleware
 # from routers import crawl  # Disabled for quick start
 
 # Setup logging
@@ -66,6 +67,24 @@ setup_exception_handlers(app)
 
 # Setup monitoring and logging
 setup_monitoring(app)
+
+# Setup rate limiting (before CORS)
+if settings.environment == "production":
+    # Stricter limits in production
+    app.add_middleware(
+        RateLimitMiddleware,
+        default_limit=100,
+        default_window=60,
+        enable_cleanup=True
+    )
+else:
+    # Generous limits in development
+    app.add_middleware(
+        RateLimitMiddleware,
+        default_limit=1000,
+        default_window=60,
+        enable_cleanup=True
+    )
 
 # Configure CORS
 app.add_middleware(

@@ -79,5 +79,84 @@ down: ## Stop all services
 logs: ## Show logs from all services
 	docker-compose logs -f
 
+# Database migration commands
+db-migrate: ## Create new database migration
+	@read -p "Migration message: " msg; \
+	cd backend && alembic revision --autogenerate -m "$$msg"
+	@echo "✅ Migration created. Review it and run 'make db-upgrade'"
+
+db-upgrade: ## Apply database migrations
+	@echo "⬆️  Applying database migrations..."
+	cd backend && alembic upgrade head
+	@echo "✅ Migrations applied"
+
+db-downgrade: ## Rollback one database migration
+	@echo "⬇️  Rolling back migration..."
+	cd backend && alembic downgrade -1
+	@echo "✅ Migration rolled back"
+
+db-reset: ## Reset database (WARNING: deletes all data)
+	@echo "⚠️  This will delete ALL data!"
+	@read -p "Are you sure? (yes/no): " confirm; \
+	if [ "$$confirm" = "yes" ]; then \
+		docker-compose down -v; \
+		docker-compose up -d postgres redis; \
+		sleep 3; \
+		cd backend && alembic upgrade head; \
+		echo "✅ Database reset complete"; \
+	else \
+		echo "❌ Cancelled"; \
+	fi
+
+# Crawler commands
+crawl: ## Run all crawlers
+	@echo "🕷️  Running all crawlers..."
+	cd backend && python run_all_crawlers.py
+
+# Celery commands
+celery-worker: ## Start Celery worker
+	@echo "👷 Starting Celery worker..."
+	cd backend && celery -A celery_app worker --loglevel=info
+
+celery-beat: ## Start Celery beat scheduler
+	@echo "⏰ Starting Celery beat..."
+	cd backend && celery -A celery_app beat --loglevel=info
+
+celery-monitor: ## Start Celery Flower monitor
+	@echo "📊 Starting Celery Flower..."
+	cd backend && celery -A celery_app flower
+
+# Configuration and validation
+check-config: ## Validate configuration
+	@echo "⚙️  Checking configuration..."
+	cd backend && python -m utils.config_validator
+
+# Code quality
+format: ## Format code with black
+	@echo "🎨 Formatting code..."
+	cd backend && black . --line-length=100
+
+# Quick start command
+quickstart: ## Quick setup for new developers
+	@echo "🚀 Quick Start for UN Jobs Hub"
+	@echo ""
+	@echo "1. Installing dependencies..."
+	$(MAKE) install
+	@echo ""
+	@echo "2. Starting Docker services..."
+	$(MAKE) db-up
+	@sleep 5
+	@echo ""
+	@echo "3. Running migrations..."
+	$(MAKE) db-upgrade
+	@echo ""
+	@echo "✅ Setup complete!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  - Run 'make dev' to start both servers"
+	@echo "  - Visit http://localhost:3000 for frontend"
+	@echo "  - Visit http://localhost:8000/docs for API docs"
+
+
 
 

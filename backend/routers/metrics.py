@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Any
 
 from database import get_db
+from utils.cache import cache, CacheKeys
 
 router = APIRouter()
 
@@ -37,30 +38,37 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
 
 @router.get("/metrics")
 async def get_metrics(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
-    """Get application metrics."""
+    """Get application metrics (cached for 5 minutes)."""
+    # Try to get from cache
+    cache_key = CacheKeys.metrics()
+    cached_metrics = cache.get_json(cache_key)
+
+    if cached_metrics:
+        return cached_metrics
+
     try:
         # Count jobs
         jobs_result = await db.execute(text("SELECT COUNT(*) FROM jobs"))
         jobs_count = jobs_result.scalar()
-        
+
         # Count users
         users_result = await db.execute(text("SELECT COUNT(*) FROM users"))
         users_count = users_result.scalar()
-        
+
         # Count favorites
         favorites_result = await db.execute(text("SELECT COUNT(*) FROM favorites"))
         favorites_count = favorites_result.scalar()
-        
+
         # Count resumes
         resumes_result = await db.execute(text("SELECT COUNT(*) FROM resumes"))
         resumes_count = resumes_result.scalar()
-        
+
         # Jobs by organization
         orgs_result = await db.execute(
             text("SELECT organization, COUNT(*) as count FROM jobs GROUP BY organization")
         )
         jobs_by_org = {row.organization: row.count for row in orgs_result}
-        
+
         # Recent jobs (last 7 days)
         week_ago = datetime.utcnow() - timedelta(days=7)
         recent_result = await db.execute(
@@ -68,8 +76,8 @@ async def get_metrics(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
             {"week_ago": week_ago}
         )
         recent_jobs = recent_result.scalar()
-        
-        return {
+
+        metrics = {
             "timestamp": datetime.utcnow().isoformat(),
             "database": {
                 "total_jobs": jobs_count,
@@ -80,6 +88,12 @@ async def get_metrics(db: AsyncSession = Depends(get_db)) -> Dict[str, Any]:
                 "jobs_by_organization": jobs_by_org,
             },
         }
+
+        # Cache for 5 minutes (300 seconds)
+        cache.set_json(cache_key, metrics, ttl=300)
+
+        return metrics
+
     except Exception as e:
         return {
             "status": "error",
