@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ export function RegisterClient() {
   const router = useRouter();
   const { register } = useAuth();
   const { toast } = useToast();
+  const t = useTranslations();
   
   const [formData, setFormData] = useState({
     email: "",
@@ -40,12 +42,12 @@ export function RegisterClient() {
     if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
 
     const strengthMap = [
-      { strength: 0, text: "太弱", color: "text-red-500" },
-      { strength: 1, text: "弱", color: "text-orange-500" },
-      { strength: 2, text: "一般", color: "text-yellow-500" },
-      { strength: 3, text: "良好", color: "text-blue-500" },
-      { strength: 4, text: "强", color: "text-green-500" },
-      { strength: 5, text: "很强", color: "text-green-600" },
+      { strength: 0, text: t("passwordStrength.veryWeak"), color: "text-red-500" },
+      { strength: 1, text: t("passwordStrength.weak"), color: "text-orange-500" },
+      { strength: 2, text: t("passwordStrength.medium"), color: "text-yellow-500" },
+      { strength: 3, text: t("passwordStrength.good"), color: "text-blue-500" },
+      { strength: 4, text: t("passwordStrength.strong"), color: "text-green-500" },
+      { strength: 5, text: t("passwordStrength.veryStrong"), color: "text-green-600" },
     ];
 
     return strengthMap[strength];
@@ -59,36 +61,36 @@ export function RegisterClient() {
       case "email":
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (value && !emailRegex.test(value)) {
-          errors.email = "请输入有效的邮箱地址";
+          errors.email = t("validation.validEmail");
         } else {
           delete errors.email;
         }
         break;
       case "username":
         if (value && value.length < 3) {
-          errors.username = "用户名至少需要3个字符";
+          errors.username = t("validation.usernameTooShort");
         } else if (value && !/^[a-zA-Z0-9_]+$/.test(value)) {
-          errors.username = "用户名只能包含字母、数字和下划线";
+          errors.username = t("validation.invalidUsername");
         } else {
           delete errors.username;
         }
         break;
       case "password":
         if (value && value.length < 6) {
-          errors.password = "密码至少需要6个字符";
+          errors.password = t("validation.passwordTooShort");
         } else {
           delete errors.password;
         }
         // 检查确认密码是否匹配
         if (formData.confirmPassword && value !== formData.confirmPassword) {
-          errors.confirmPassword = "两次输入的密码不一致";
+          errors.confirmPassword = t("validation.passwordsDontMatch");
         } else if (formData.confirmPassword) {
           delete errors.confirmPassword;
         }
         break;
       case "confirmPassword":
         if (value && value !== formData.password) {
-          errors.confirmPassword = "两次输入的密码不一致";
+          errors.confirmPassword = t("validation.passwordsDontMatch");
         } else {
           delete errors.confirmPassword;
         }
@@ -111,22 +113,22 @@ export function RegisterClient() {
     // 最终验证
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError("请输入有效的邮箱地址");
+      setError(t("validation.validEmail"));
       return;
     }
 
     if (formData.username.length < 3) {
-      setError("用户名至少需要3个字符");
+      setError(t("validation.usernameTooShort"));
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("密码至少需要6个字符");
+      setError(t("validation.passwordTooShort"));
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("两次输入的密码不一致");
+      setError(t("validation.passwordsDontMatch"));
       return;
     }
 
@@ -137,8 +139,8 @@ export function RegisterClient() {
       
       // 显示成功提示
       toast({
-        title: "注册成功",
-        description: "欢迎加入！正在跳转到个人中心...",
+        title: t("success.signupSuccess"),
+        description: t("success.signupWelcome"),
         variant: "success",
       });
 
@@ -149,16 +151,16 @@ export function RegisterClient() {
       }, 500);
     } catch (err: any) {
       // 友好的错误提示
-      let errorMessage = "注册失败，请重试";
+      let errorMessage = t("errors.signupFailed");
       
       if (err.message) {
         const msg = err.message.toLowerCase();
         if (msg.includes("email") && msg.includes("already")) {
-          errorMessage = "该邮箱已被注册，请使用其他邮箱";
+          errorMessage = t("errors.emailExists");
         } else if (msg.includes("username") && msg.includes("already")) {
-          errorMessage = "该用户名已被使用，请选择其他用户名";
+          errorMessage = t("errors.usernameExists");
         } else if (msg.includes("network") || msg.includes("fetch")) {
-          errorMessage = "网络连接失败，请检查网络后重试";
+          errorMessage = t("errors.networkError");
         } else {
           errorMessage = err.message;
         }
@@ -167,7 +169,7 @@ export function RegisterClient() {
       setError(errorMessage);
       
       toast({
-        title: "注册失败",
+        title: t("errors.signupFailed"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -181,8 +183,8 @@ export function RegisterClient() {
 
   return (
     <AuthForm
-      title="创建账户"
-      description="填写信息以开始使用联合国职位中心"
+      title={t("auth.createAccount")}
+      description={t("auth.registerDescription")}
       icon={<UserPlus className="h-6 w-6 text-primary" />}
       error={error}
       footer={
@@ -196,10 +198,10 @@ export function RegisterClient() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                创建中...
+                {t("auth.creatingAccount")}
               </>
             ) : (
-              "创建账户"
+              t("auth.createAccount")
             )}
           </Button>
           <div className="relative">
@@ -208,23 +210,23 @@ export function RegisterClient() {
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-background px-2 text-muted-foreground">
-                或
+                or
               </span>
             </div>
           </div>
           <p className="text-center text-sm text-muted-foreground">
-            已有账户？{" "}
+            {t("auth.alreadyHaveAccount")}{" "}
             <Link href="/login" className="font-medium text-primary hover:underline">
-              立即登录
+              {t("auth.signInNow")}
             </Link>
           </p>
         </>
       }
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="email">
-            邮箱地址 <span className="text-destructive">*</span>
+          <Label htmlFor="email" className="text-sm font-medium">
+            {t("auth.email")} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="email"
@@ -247,14 +249,14 @@ export function RegisterClient() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="username">
-            用户名 <span className="text-destructive">*</span>
+          <Label htmlFor="username" className="text-sm font-medium">
+            {t("auth.username")} <span className="text-destructive">*</span>
           </Label>
           <Input
             id="username"
             name="username"
             type="text"
-            placeholder="用户名（字母、数字、下划线）"
+            placeholder={t("auth.usernamePlaceholder")}
             value={formData.username}
             onChange={handleChange}
             required
@@ -271,21 +273,21 @@ export function RegisterClient() {
           {!fieldErrors.username && formData.username.length >= 3 && (
             <p className="text-xs text-green-600 flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
-              用户名可用
+              {t("auth.usernameAvailable")}
             </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">
-            密码 <span className="text-destructive">*</span>
+          <Label htmlFor="password" className="text-sm font-medium">
+            {t("auth.password")} <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
             <Input
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="至少6个字符"
+              placeholder={t("auth.passwordPlaceholder")}
               value={formData.password}
               onChange={handleChange}
               required
@@ -309,7 +311,7 @@ export function RegisterClient() {
           </div>
           {formData.password && (
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-muted-foreground">密码强度:</span>
+              <span className="text-muted-foreground">{t("auth.passwordStrength")}:</span>
               <span className={passwordStrength.color}>
                 {passwordStrength.text}
               </span>
@@ -324,15 +326,15 @@ export function RegisterClient() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">
-            确认密码 <span className="text-destructive">*</span>
+          <Label htmlFor="confirmPassword" className="text-sm font-medium">
+            {t("auth.confirmPassword")} <span className="text-destructive">*</span>
           </Label>
           <div className="relative">
             <Input
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="再次输入密码"
+              placeholder={t("auth.confirmPasswordPlaceholder")}
               value={formData.confirmPassword}
               onChange={handleChange}
               required
@@ -365,19 +367,19 @@ export function RegisterClient() {
            formData.password === formData.confirmPassword && (
             <p className="text-xs text-green-600 flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
-              密码匹配
+              {t("auth.passwordMatch")}
             </p>
           )}
         </div>
 
         <p className="text-xs text-muted-foreground">
-          注册即表示您同意我们的{" "}
+          {t("auth.terms")}{" "}
           <Link href="/terms" className="text-primary hover:underline">
-            服务条款
+            {t("auth.termsOfService")}
           </Link>{" "}
           和{" "}
           <Link href="/privacy" className="text-primary hover:underline">
-            隐私政策
+            {t("auth.privacyPolicy")}
           </Link>
         </p>
       </form>

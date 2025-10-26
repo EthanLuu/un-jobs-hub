@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Globe, LogOut, User } from "lucide-react";
+import { Globe, LogOut, User, Languages } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
@@ -15,6 +17,16 @@ import {
 
 export function Header() {
   const { user, logout, isLoading } = useAuth();
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLanguageChange = (newLocale: string) => {
+    // 移除当前 locale 前缀
+    const pathWithoutLocale = pathname.replace(`/${locale}`, '');
+    // 导航到新语言的页面
+    router.push(`/${newLocale}${pathWithoutLocale}`);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -43,6 +55,30 @@ export function Header() {
         </nav>
 
         <div className="flex items-center space-x-4">
+          {/* Language Switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Languages className="h-4 w-4" />
+                <span className="sr-only">Change language</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => handleLanguageChange('zh')}
+                className={locale === 'zh' ? 'bg-accent' : ''}
+              >
+                中文
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleLanguageChange('en')}
+                className={locale === 'en' ? 'bg-accent' : ''}
+              >
+                English
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {isLoading ? (
             <div className="h-9 w-20 animate-pulse rounded-md bg-muted" />
           ) : user ? (
