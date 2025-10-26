@@ -66,17 +66,21 @@ jobs:
     - name: Run database migrations
       run: |
         cd backend
+        export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_unjobs
+        python -m pip install psycopg2-binary || pip install psycopg2-binary || echo "psycopg2-binary already installed"
         python -c "
-        import os
-        os.environ['DATABASE_URL'] = 'postgresql://postgres:postgres@localhost:5432/test_unjobs'
-        
-        from sqlalchemy import create_engine
-        from models import Base
-        
-        # Create synchronous engine for migrations
-        engine = create_engine('postgresql://postgres:postgres@localhost:5432/test_unjobs')
-        Base.metadata.create_all(engine)
-        print('✓ Database tables created successfully')
+        try:
+            from sqlalchemy import create_engine
+            from models import Base
+            
+            engine = create_engine('postgresql://postgres:postgres@localhost:5432/test_unjobs')
+            Base.metadata.create_all(engine)
+            print('✓ Database tables created successfully')
+        except Exception as e:
+            print(f'✗ Migration failed: {e}')
+            import traceback
+            traceback.print_exc()
+            exit(1)
         "
     
     - name: Run backend tests
