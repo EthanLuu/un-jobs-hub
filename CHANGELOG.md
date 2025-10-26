@@ -1,5 +1,74 @@
 # Changelog - UN Jobs Hub
 
+## [1.9.0] - 2024-12-19
+
+### 🎉 新增功能
+
+#### 数据库迁移工具
+- **migrate_db.py**: 完整的Alembic迁移助手
+  - `create`: 创建新迁移
+  - `upgrade`: 升级数据库
+  - `downgrade`: 降级数据库
+  - `current`: 显示当前版本
+  - `history`: 显示迁移历史
+  - `stamp`: 标记数据库版本
+- **自动配置**: 自动读取settings中的DATABASE_URL
+- **命令行界面**: 友好的CLI界面
+
+#### 数据库初始化工具
+- **init_db.py**: 数据库初始化和种子数据
+  - `check`: 检查数据库连接
+  - `create`: 创建数据库（如需要）
+  - `tables`: 创建所有表
+  - `drop`: 删除所有表（需确认）
+  - `show`: 显示所有表
+  - `seed`: 填充测试数据
+- **测试账户**: 自动创建开发测试账户
+  - Admin: admin@unjobshub.com / admin123
+  - User: user@example.com / password123
+
+### 📊 统计数据
+- **新增脚本**: 2个（migrate_db.py, init_db.py）
+- **CLI命令**: 11个（6个迁移命令 + 5个初始化命令）
+- **自动化**: 完整的数据库设置流程
+
+### 🔧 技术改进
+- Alembic迁移管理自动化
+- 数据库初始化自动化
+- 开发环境快速设置
+- 测试数据自动创建
+- 更好的数据库工具
+
+### 📈 改进
+- 开发体验：简化数据库设置流程
+- 迁移管理：更容易的版本控制
+- 测试：快速设置测试环境
+- 部署：更可靠的数据库迁移
+
+### 📝 使用示例
+```bash
+# 检查数据库连接
+python init_db.py check
+
+# 创建所有表
+python init_db.py tables
+
+# 填充测试数据
+python init_db.py seed
+
+# 创建迁移
+python migrate_db.py create "Add new field"
+
+# 应用迁移
+python migrate_db.py upgrade
+```
+
+### 🚀 部署改进
+- 更简单的数据库设置
+- 自动化迁移管理
+- 开发环境快速启动
+- 一致的数据库状态
+
 ## [1.8.0] - 2024-12-19
 
 ### 🎉 新增功能
