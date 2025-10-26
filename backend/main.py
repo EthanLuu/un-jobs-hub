@@ -18,7 +18,11 @@ from utils.security import SecurityHeadersMiddleware, InputValidationMiddleware
 # from routers import crawl  # Disabled for quick start
 
 # Setup logging
-logger = setup_logger(__name__, level=settings.log_level)
+logger = setup_logger(
+    __name__,
+    level=settings.log_level,
+    json_format=(settings.environment == "production")
+)
 
 # Check if running in serverless environment
 is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")

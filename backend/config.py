@@ -10,8 +10,10 @@ class Settings(BaseSettings):
 
     # Application
     app_name: str = "UNJobsHub API"
-    app_version: str = "1.4.0"
+    app_version: str = "1.5.0"
     debug: bool = False
+    environment: str = "development"  # development, staging, production
+    log_level: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
     # Database - REQUIRED (no default, must be set explicitly)
     # Use PostgreSQL for production (Neon, Supabase, etc.)
@@ -60,6 +62,24 @@ class Settings(BaseSettings):
             # Split by comma and strip whitespace
             return [origin.strip() for origin in v.split(',') if origin.strip()]
         return v
+
+    @field_validator('environment')
+    @classmethod
+    def validate_environment(cls, v):
+        """Validate environment setting."""
+        valid_environments = ['development', 'staging', 'production']
+        if v.lower() not in valid_environments:
+            raise ValueError(f"environment must be one of {valid_environments}")
+        return v.lower()
+
+    @field_validator('log_level')
+    @classmethod
+    def validate_log_level(cls, v):
+        """Validate log level setting."""
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        if v.upper() not in valid_levels:
+            raise ValueError(f"log_level must be one of {valid_levels}")
+        return v.upper()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

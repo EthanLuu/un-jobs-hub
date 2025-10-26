@@ -1,5 +1,70 @@
 # Changelog - UN Jobs Hub
 
+## [1.5.0] - 2024-12-19
+
+### 🎉 新增功能
+
+#### 配置系统增强
+- **环境配置**: 添加environment和log_level配置项
+  - environment: development, staging, production
+  - log_level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- **配置验证**: 自动验证环境和日志级别设置
+  - 环境必须是development/staging/production之一
+  - 日志级别必须是有效的Python日志级别
+
+#### 结构化日志系统
+- **JSON格式化器**: 生产环境使用JSON格式日志
+  - 时间戳、级别、日志器名称
+  - 模块、函数、行号
+  - 异常信息
+  - 上下文数据
+- **StructuredLogger类**: 支持结构化日志记录
+  - info_structured()
+  - error_structured()
+  - warning_structured()
+  - debug_structured()
+- **请求上下文追踪**: 使用ContextVar追踪请求
+  - request_id
+  - method
+  - path
+  - client_host
+- **上下文管理器**: log_context上下文管理器
+  - 自动添加和清理上下文数据
+  - 支持嵌套上下文
+
+#### 监控改进
+- **结构化监控日志**: PerformanceMonitoringMiddleware使用结构化日志
+  - 请求方法、路径、状态码
+  - 响应时间（毫秒）
+  - 客户端主机
+  - 错误类型和详情
+- **增强的RequestIDMiddleware**: 自动设置请求上下文
+  - 为每个请求生成唯一ID
+  - 自动添加到日志上下文
+  - 请求结束时自动清理
+
+### 📊 统计数据
+- **新增配置项**: 2个（environment, log_level）
+- **新增类**: 3个（JSONFormatter, StructuredLogger, log_context）
+- **新增函数**: 2个（set_request_context, clear_request_context）
+- **更新中间件**: 2个（PerformanceMonitoringMiddleware, RequestIDMiddleware）
+
+### 🔧 技术改进
+- 环境感知的日志格式（开发环境人类可读，生产环境JSON）
+- 请求级别的上下文追踪
+- 结构化日志支持任意字段
+- 改进的错误日志包含完整堆栈跟踪
+- 自动日志上下文清理
+
+### 📝 文档更新
+- 更新配置文档说明environment和log_level
+- 添加结构化日志使用示例
+
+### 🚀 部署改进
+- 生产环境自动使用JSON格式日志
+- 更好的日志聚合支持（ELK, Datadog等）
+- 更容易的问题追踪和调试
+
 ## [1.4.0] - 2024-12-19
 
 ### 🎉 新增功能
