@@ -56,10 +56,88 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="UN Jobs Hub API - Aggregating job postings from UN organizations",
+    description="""
+## UN Jobs Hub API
+
+A comprehensive API for aggregating job postings from multiple UN organizations.
+
+### Features
+
+* **Job Search** - Search and filter jobs from 8+ UN organizations
+* **AI Matching** - AI-powered job recommendations based on your resume
+* **User Management** - Registration, authentication, and profile management
+* **Favorites** - Save and manage favorite job postings
+* **Resume Management** - Upload and parse resumes for job matching
+
+### UN Organizations Covered
+
+* UN Careers Official (careers.un.org)
+* UNCareer.net
+* WHO (World Health Organization)
+* FAO (Food and Agriculture Organization)
+* UNOPS (UN Office for Project Services)
+* ILO (International Labour Organization)
+* UNDP (UN Development Programme)
+* UNICEF (UN Children's Fund)
+
+### Rate Limiting
+
+API endpoints are rate-limited to prevent abuse:
+- Standard endpoints: 100 requests/minute (production)
+- Authentication: 5 requests/5 minutes
+- Match operations: 10 requests/minute
+
+### Authentication
+
+Most endpoints require JWT authentication. Obtain a token via `/api/auth/login`.
+Include the token in the Authorization header: `Bearer <token>`
+
+### Support
+
+For issues or questions, please open an issue on [GitHub](https://github.com/EthanLuu/un-jobs-hub).
+    """,
+    summary="UN Jobs Hub - Aggregating UN job postings worldwide",
+    version=settings.app_version,
+    terms_of_service="https://github.com/EthanLuu/un-jobs-hub/blob/main/TERMS.md",
+    contact={
+        "name": "UN Jobs Hub Team",
+        "url": "https://github.com/EthanLuu/un-jobs-hub",
+        "email": "support@unjobshub.com",
+    },
+    license_info={
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT",
+    },
+    openapi_tags=[
+        {
+            "name": "Authentication",
+            "description": "User registration, login, and token management",
+        },
+        {
+            "name": "Jobs",
+            "description": "Job search, filtering, and details",
+        },
+        {
+            "name": "Favorites",
+            "description": "Manage favorite job postings",
+        },
+        {
+            "name": "Resume",
+            "description": "Upload and manage resumes",
+        },
+        {
+            "name": "Matching",
+            "description": "AI-powered job matching and recommendations",
+        },
+        {
+            "name": "Metrics",
+            "description": "Application health and metrics",
+        },
+    ],
     lifespan=lifespan,
     docs_url="/docs" if settings.environment != "production" else None,
     redoc_url="/redoc" if settings.environment != "production" else None,
+    openapi_url="/openapi.json" if settings.environment != "production" else None,
 )
 
 # Setup exception handlers
