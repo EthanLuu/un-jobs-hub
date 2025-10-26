@@ -25,7 +25,8 @@
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_uk4eOdBWc9tn@ep-billowing-poetry-adzqclhh-pooler.c-2.us-east-1.aws.neon.tech/neondb\" REDIS_URL=\"\" python3:*)",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_uk4eOdBWc9tn@ep-billowing-poetry-adzqclhh-pooler.c-2.us-east-1.aws.neon.tech/neondb\" python3:*)",
       "WebFetch(domain:careers.un.org)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

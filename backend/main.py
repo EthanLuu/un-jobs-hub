@@ -1,5 +1,6 @@
 """Main FastAPI application entry point."""
 import os
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -9,8 +10,13 @@ from config import settings
 from database import get_engine, Base
 from routers import auth, jobs, favorites, resume, match, metrics
 from utils.monitoring import setup_monitoring
+from utils.exceptions import setup_exception_handlers
+from utils.logger import setup_logger
+from utils.config_validator import ConfigValidator
 # from routers import crawl  # Disabled for quick start
 
+# Setup logging
+logger = setup_logger(__name__, level=settings.log_level)
 
 # Check if running in serverless environment
 is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
@@ -20,23 +26,43 @@ is_serverless = os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME")
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     # Startup
+    logger.info(f"Starting {settings.app_name} v{settings.app_version}")
+    logger.info(f"Environment: {settings.environment}")
+
+    # Validate configuration (non-strict in serverless)
+    if not is_serverless:
+        ConfigValidator.run_startup_checks(strict=True)
+
     engine = get_engine()
     if not is_serverless:
         # Only create tables in non-serverless environments
         # In serverless, tables should be created via migrations
+        logger.info("Creating database tables...")
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables created successfully")
+
+    logger.info(f"{settings.app_name} started successfully")
     yield
+
     # Shutdown
+    logger.info("Shutting down application...")
     await engine.dispose()
+    logger.info("Application shutdown complete")
 
 
 # Initialize FastAPI app
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
+    description="UN Jobs Hub API - Aggregating job postings from UN organizations",
     lifespan=lifespan,
+    docs_url="/docs" if settings.environment != "production" else None,
+    redoc_url="/redoc" if settings.environment != "production" else None,
 )
+
+# Setup exception handlers
+setup_exception_handlers(app)
 
 # Setup monitoring and logging
 setup_monitoring(app)

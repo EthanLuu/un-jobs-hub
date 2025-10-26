@@ -1,5 +1,85 @@
 # Changelog - UN Jobs Hub
 
+## [1.2.0] - 2024-12-19
+
+### 🎉 新增功能
+
+#### Celery任务系统升级
+- **更新所有8个爬虫任务**: Celery Beat定时任务现包含所有UN组织
+  - UN Careers官方（1 AM UTC）
+  - UNCareer.net（2 AM UTC）
+  - WHO 世界卫生组织（3 AM UTC）
+  - FAO 联合国粮农组织（4 AM UTC）
+  - UNOPS 联合国项目事务厅（5 AM UTC）
+  - ILO 国际劳工组织（6 AM UTC）
+  - UNDP 开发计划署（7 AM UTC）
+  - UNICEF 儿童基金会（8 AM UTC）
+- **新增统一爬取任务**: `crawl_all_jobs` 任务可一次性运行所有爬虫
+
+#### 错误处理和日志系统
+- **自定义异常类**: 创建统一的异常处理体系
+  - `UNJobsException` - 基础异常类
+  - `DatabaseException` - 数据库异常
+  - `CrawlerException` - 爬虫异常
+  - `NotFoundException` - 资源未找到
+  - `ValidationException` - 验证异常
+  - `AuthenticationException` - 认证异常
+  - `AuthorizationException` - 授权异常
+- **全局异常处理器**: 自动处理和格式化所有异常响应
+- **增强日志系统**:
+  - `setup_logger()` - 统一日志配置
+  - `LoggerMixin` - 类日志混入
+  - `log_execution_time` - 函数执行时间装饰器
+  - 支持控制台和文件日志
+
+#### 配置验证系统
+- **环境变量验证**: 启动时自动验证必需的环境变量
+- **生产环境检查**: 生产环境额外检查关键配置
+- **配置摘要**: 启动时打印配置概览
+- **数据库连接检查**: 启动时验证数据库连接
+- **启动检查脚本**: `ConfigValidator.run_startup_checks()`
+
+#### 数据库迁移系统
+- **Alembic配置**: 完整的数据库迁移支持
+  - 自动生成迁移脚本
+  - 支持升级和降级
+  - 版本历史追踪
+- **迁移文档**: 添加详细的迁移使用说明
+
+#### API改进
+- **增强文档**: 更详细的OpenAPI描述
+- **环境敏感文档**: 生产环境自动隐藏/docs和/redoc
+- **改进启动日志**: 详细的启动和关闭日志
+
+### 📊 统计数据
+- **新增工具模块**: 3个（logger, exceptions, config_validator）
+- **Celery任务**: 8个定时任务 + 2个按需任务
+- **异常类**: 7个自定义异常类型
+- **异常处理器**: 5个全局处理器
+
+### 🔧 技术改进
+- 完整的错误处理和日志系统
+- 环境配置验证和启动检查
+- Alembic数据库迁移支持
+- 增强的主应用程序初始化
+- 改进的开发者体验
+
+### 📝 文档更新
+- **前端性能优化指南**: `FRONTEND_PERFORMANCE.md`
+  - 代码分割和懒加载
+  - 图片优化策略
+  - 缓存策略
+  - 性能监控
+  - 优化清单
+- **Alembic迁移文档**: `backend/alembic/README.md`
+- **更新变更日志**: 本文件
+
+### 🚀 部署改进
+- 启动时自动配置验证
+- 更详细的启动日志
+- 数据库连接健康检查
+- 环境敏感配置
+
 ## [1.1.0] - 2024-12-19
 
 ### 🎉 新增功能
