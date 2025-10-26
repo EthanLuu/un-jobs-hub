@@ -29,10 +29,12 @@ export function LoginClient() {
 
   // 从本地存储加载记住的邮箱
   useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail");
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem("rememberedEmail");
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
     }
   }, []);
 
@@ -92,10 +94,12 @@ export function LoginClient() {
       await login(email, password);
       
       // 处理"记住我"
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
-      } else {
-        localStorage.removeItem("rememberedEmail");
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
       }
 
       // 显示成功提示
