@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useLocale } from 'next-intl';
 import { Button } from "@/components/ui/button";
 import { Globe, LogOut, User, Languages } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
@@ -18,10 +19,24 @@ export function Header() {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const locale = useLocale();
 
   const handleLanguageChange = (newLocale: string) => {
-    // 暂时禁用语言切换功能
-    console.log('Language change requested:', newLocale);
+    if (newLocale === locale) return;
+    
+    // 移除当前 locale
+    let newPath = pathname || '/';
+    if (locale === 'zh') {
+      newPath = newPath.replace(/^\/zh/, '');
+    }
+    
+    // 添加新 locale
+    if (newLocale === 'zh') {
+      newPath = '/zh' + newPath;
+    }
+    
+    router.push(newPath);
+    router.refresh();
   };
 
   return (
