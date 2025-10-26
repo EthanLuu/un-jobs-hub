@@ -230,8 +230,30 @@ make dev
 ---
 
 **最后更新:** 2024年12月19日
-**版本:** v1.7.0
+**版本:** v1.8.0
 **状态:** 🟢 活跃开发中
+
+## 🆕 最新更新 (v1.8.0)
+
+### 🎉 新增功能
+- ✅ 前端错误处理系统 - APIError类和重试机制
+- ✅ Toast通知系统 - 轻量级用户通知
+- ✅ 加载状态组件 - 统一的Loading组件
+- ✅ API客户端增强 - 超时和自动重试
+
+### 📈 改进
+- 错误处理：类型化错误、自动重试、超时处理
+- 通知：4种类型的Toast通知，自动消失
+- 加载：统一的加载指示器组件
+- API：重试逻辑、网络错误检测、更好的错误消息
+- UX：更好的用户反馈和错误提示
+
+### 🔧 技术改进
+- APIError with typed error codes
+- Exponential backoff retry (max 2 retries)
+- 30-second request timeout
+- Toast notification system
+- Reusable loading components
 
 ## 🆕 最新更新 (v1.7.0)
 

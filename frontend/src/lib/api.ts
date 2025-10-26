@@ -1,4 +1,8 @@
+import { APIError, retryWithBackoff, withTimeout } from './api-errors';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const DEFAULT_TIMEOUT = 30000; // 30 seconds
+const DEFAULT_MAX_RETRIES = 2;
 
 export interface Job {
   id: number;
@@ -79,55 +83,65 @@ class APIClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    config: { timeout?: number; maxRetries?: number; skipRetry?: boolean } = {}
   ): Promise<T> {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...(options.headers as Record<string, string>),
+    const {
+      timeout = DEFAULT_TIMEOUT,
+      maxRetries = DEFAULT_MAX_RETRIES,
+      skipRetry = false,
+    } = config;
+
+    const makeRequest = async (): Promise<T> => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(options.headers as Record<string, string>),
+      };
+
+      if (this.token) {
+        headers["Authorization"] = `Bearer ${this.token}`;
+      }
+
+      let response: Response;
+
+      try {
+        // Add timeout to request
+        response = await withTimeout(
+          fetch(`${this.baseURL}${endpoint}`, {
+            ...options,
+            headers,
+          }),
+          timeout
+        );
+      } catch (error) {
+        // Handle network errors
+        if (error instanceof TypeError) {
+          throw APIError.networkError();
+        }
+        throw error;
+      }
+
+      if (!response.ok) {
+        let errorData: any;
+        try {
+          errorData = await response.json();
+        } catch {
+          // If JSON parsing fails, create error without data
+          throw APIError.fromResponse(response);
+        }
+
+        throw APIError.fromResponse(response, errorData);
+      }
+
+      return response.json();
     };
 
-    if (this.token) {
-      headers["Authorization"] = `Bearer ${this.token}`;
+    // Use retry logic unless explicitly disabled
+    if (skipRetry) {
+      return makeRequest();
     }
 
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      try {
-        const error = await response.json();
-        // 处理 FastAPI 的标准错误格式
-        let errorMessage = "An error occurred";
-        
-        if (error.detail) {
-          // 如果 detail 是字符串
-          if (typeof error.detail === 'string') {
-            errorMessage = error.detail;
-          } 
-          // 如果 detail 是数组（FastAPI 的验证错误）
-          else if (Array.isArray(error.detail)) {
-            errorMessage = error.detail.map((err: any) => err.msg || err.message || JSON.stringify(err)).join(', ');
-          }
-          // 如果 detail 是对象
-          else if (typeof error.detail === 'object') {
-            errorMessage = JSON.stringify(error.detail);
-          }
-        } else if (error.message) {
-          errorMessage = error.message;
-        } else if (error.error) {
-          errorMessage = error.error;
-        }
-        
-        throw new Error(errorMessage);
-      } catch (parseError) {
-        // 如果无法解析 JSON，使用状态文本
-        throw new Error(response.statusText || "An error occurred");
-      }
-    }
-
-    return response.json();
+    return retryWithBackoff(makeRequest, { maxRetries });
   }
 
   // Auth endpoints
@@ -224,14 +238,32 @@ class APIClient {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(`${this.baseURL}/api/resume/upload`, {
-      method: "POST",
-      headers,
-      body: formData,
-    });
+    let response: Response;
+
+    try {
+      response = await withTimeout(
+        fetch(`${this.baseURL}/api/resume/upload`, {
+          method: "POST",
+          headers,
+          body: formData,
+        }),
+        DEFAULT_TIMEOUT
+      );
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw APIError.networkError();
+      }
+      throw error;
+    }
 
     if (!response.ok) {
-      throw new Error("Failed to upload resume");
+      let errorData: any;
+      try {
+        errorData = await response.json();
+      } catch {
+        throw APIError.fromResponse(response);
+      }
+      throw APIError.fromResponse(response, errorData);
     }
 
     return response.json();

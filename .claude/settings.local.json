@@ -27,7 +27,8 @@
       "WebFetch(domain:careers.un.org)",
       "Bash(curl:*)",
       "Bash(find:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []
