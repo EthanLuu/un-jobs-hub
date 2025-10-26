@@ -14,6 +14,7 @@ from utils.exceptions import setup_exception_handlers
 from utils.logger import setup_logger
 from utils.config_validator import ConfigValidator
 from utils.rate_limit import RateLimitMiddleware
+from utils.security import SecurityHeadersMiddleware, InputValidationMiddleware
 # from routers import crawl  # Disabled for quick start
 
 # Setup logging
@@ -163,6 +164,10 @@ else:
         default_window=60,
         enable_cleanup=True
     )
+
+# Setup security middleware
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(InputValidationMiddleware)
 
 # Configure CORS
 app.add_middleware(

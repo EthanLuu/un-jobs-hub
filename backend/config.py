@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # Application
     app_name: str = "UNJobsHub API"
-    app_version: str = "1.3.0"
+    app_version: str = "1.4.0"
     debug: bool = False
 
     # Database - REQUIRED (no default, must be set explicitly)

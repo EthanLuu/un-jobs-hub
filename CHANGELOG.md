@@ -1,5 +1,66 @@
 # Changelog - UN Jobs Hub
 
+## [1.4.0] - 2024-12-19
+
+### 🎉 新增功能
+
+#### 数据库优化工具
+- **optimize_db.py**: 综合数据库分析和优化工具
+  - 表大小分析
+  - 索引使用统计
+  - 缺失索引建议
+  - 慢查询识别
+  - 表膨胀检测
+  - VACUUM ANALYZE执行
+  - 数据库健康报告
+  - 缓存命中率分析
+
+#### 安全增强
+- **安全头部中间件**: 自动添加安全HTTP头
+  - X-Frame-Options (防止点击劫持)
+  - X-Content-Type-Options (防止MIME嗅探)
+  - X-XSS-Protection (XSS保护)
+  - Strict-Transport-Security (HSTS)
+  - Content-Security-Policy (CSP)
+  - Referrer-Policy
+  - Permissions-Policy
+- **输入验证中间件**: 验证和限制输入
+  - 查询参数长度限制
+  - 路径长度验证
+  - 头部大小限制
+  - 文件扩展名验证
+- **安全工具函数**:
+  - 输入消毒 (sanitize_input)
+  - 邮箱验证 (validate_email)
+  - 密码强度验证
+  - 文件扩展名验证
+- **安全检查清单**: 完整的部署安全指南
+
+### 📊 统计数据
+- **新增工具**: 2个（optimize_db.py, security.py）
+- **新增中间件**: 2个（SecurityHeaders, InputValidation）
+- **安全功能**: 7个安全头部，4个验证函数
+
+### 🔧 技术改进
+- 数据库性能分析工具
+- 全面的安全防护
+- 输入验证和消毒
+- 自动安全头部注入
+- 生产环境安全配置
+
+### 🔐 安全改进
+- 防止点击劫持攻击
+- XSS保护
+- MIME嗅探保护
+- 内容安全策略
+- 输入长度限制
+- 密码强度要求
+
+### 📝 文档更新
+- 安全部署检查清单
+- 数据库优化指南
+- 安全最佳实践
+
 ## [1.3.0] - 2024-12-19
 
 ### 🎉 新增功能
