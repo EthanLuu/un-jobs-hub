@@ -1,10 +1,12 @@
 """Crawler management routes (admin only)."""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 
 from database import get_db
 from models.user import User
 from utils.auth import get_current_admin_user
+from utils.crawler_monitoring import crawler_monitor
 from celery_app import crawl_un_careers, crawl_undp_jobs
 
 router = APIRouter()
@@ -72,6 +74,85 @@ async def trigger_all_crawls(
     return {
         "message": "All crawl tasks triggered",
         "tasks": tasks
+    }
+
+
+@router.get("/health")
+async def get_crawler_health_overview(
+    current_user: User = Depends(get_current_admin_user)
+):
+    """
+    Get health overview for all crawlers (admin only).
+
+    Returns overall health status and summary statistics.
+    """
+    overall_health = crawler_monitor.get_overall_health()
+    all_health = crawler_monitor.get_all_health()
+
+    return {
+        "overall": overall_health,
+        "crawlers": all_health
+    }
+
+
+@router.get("/health/{organization}")
+async def get_specific_crawler_health(
+    organization: str,
+    current_user: User = Depends(get_current_admin_user)
+):
+    """
+    Get detailed health status for a specific crawler (admin only).
+
+    Args:
+        organization: Organization name
+
+    Returns:
+        Detailed health information including checks and statistics
+    """
+    health = crawler_monitor.get_crawler_health(organization)
+
+    if health["health"] == "unknown":
+        raise HTTPException(
+            status_code=404,
+            detail=f"No data available for organization: {organization}"
+        )
+
+    return health
+
+
+@router.get("/stats")
+async def get_crawler_stats(
+    current_user: User = Depends(get_current_admin_user)
+):
+    """
+    Get statistics for all crawlers (admin only).
+
+    Returns aggregated statistics across all crawlers.
+    """
+    all_health = crawler_monitor.get_all_health()
+
+    total_runs = sum(c["stats"]["total_runs"] for c in all_health)
+    total_jobs_found = sum(c["stats"]["total_jobs_found"] for c in all_health)
+    total_jobs_saved = sum(c["stats"]["total_jobs_saved"] for c in all_health)
+
+    return {
+        "total_crawlers": len(all_health),
+        "total_runs": total_runs,
+        "total_jobs_found": total_jobs_found,
+        "total_jobs_saved": total_jobs_saved,
+        "crawlers": [
+            {
+                "organization": c["organization"],
+                "total_runs": c["stats"]["total_runs"],
+                "success_rate": c["stats"]["success_rate"],
+                "total_jobs_found": c["stats"]["total_jobs_found"],
+                "total_jobs_saved": c["stats"]["total_jobs_saved"],
+                "average_duration": c["stats"]["average_duration"],
+                "last_run": c["stats"]["last_run"],
+                "health": c["health"]
+            }
+            for c in all_health
+        ]
     }
 
 

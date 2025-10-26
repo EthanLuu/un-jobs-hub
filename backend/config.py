@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # Application
     app_name: str = "UNJobsHub API"
-    app_version: str = "1.5.0"
+    app_version: str = "1.6.0"
     debug: bool = False
     environment: str = "development"  # development, staging, production
     log_level: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
