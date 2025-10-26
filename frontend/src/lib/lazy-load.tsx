@@ -50,10 +50,10 @@ export const ListSkeleton = ({ count = 5 }: { count?: number }) => (
  */
 export function lazyLoad<P extends object>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
-  loadingComponent: ComponentType = ComponentSkeleton
+  LoadingComponent: ComponentType = ComponentSkeleton
 ) {
   return dynamic(importFunc, {
-    loading: loadingComponent,
+    loading: () => <LoadingComponent />,
     ssr: true, // Enable SSR by default
   });
 }
@@ -63,10 +63,10 @@ export function lazyLoad<P extends object>(
  */
 export function lazyLoadClient<P extends object>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
-  loadingComponent: ComponentType = ComponentSkeleton
+  LoadingComponent: ComponentType = ComponentSkeleton
 ) {
   return dynamic(importFunc, {
-    loading: loadingComponent,
+    loading: () => <LoadingComponent />,
     ssr: false, // Disable SSR for client-only components
   });
 }
@@ -82,18 +82,3 @@ export function preload<P extends object>(
   importFunc();
 }
 
-// Pre-configured lazy loaded components
-export const LazyJobCard = lazyLoad(
-  () => import('@/components/jobs/job-card'),
-  CardSkeleton
-);
-
-export const LazyJobSearchFilters = lazyLoad(
-  () => import('@/components/jobs/job-search-filters'),
-  () => <div className="h-96 animate-pulse bg-gray-100 rounded"></div>
-);
-
-export const LazyChart = lazyLoadClient(
-  () => import('@/components/charts/chart-component'),
-  () => <div className="h-64 animate-pulse bg-gray-100 rounded"></div>
-);
