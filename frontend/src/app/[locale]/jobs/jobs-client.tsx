@@ -59,7 +59,7 @@ export function JobsClient() {
     router.replace(newUrl, { scroll: false });
   }, [page, searchTerm, organization, category, grade, location, educationLevel, minExperience, maxExperience, selectedContractTypes, excludedContractTypes, sortBy, sortOrder, router]);
 
-  const params: Record<string, string | number> = {
+  const params: Record<string, string | number | string[]> = {
     page,
     page_size: 20,
     sort_by: sortBy,
