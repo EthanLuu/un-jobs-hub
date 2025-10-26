@@ -82,6 +82,12 @@ def get_session_factory():
 # Base class for models
 Base = declarative_base()
 
+def get_async_session():
+    """Get async database session for use in standalone scripts."""
+    session_factory = get_session_factory()
+    return session_factory()
+
+
 async def get_db():
     """Dependency for getting database session."""
     session_factory = get_session_factory()

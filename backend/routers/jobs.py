@@ -1,7 +1,7 @@
 """Job listing routes."""
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_
+from sqlalchemy import select, func, or_, distinct
 from typing import List, Optional
 
 from database import get_db
@@ -11,6 +11,68 @@ from schemas.job import JobResponse, JobFilter
 from utils.auth import get_current_user
 
 router = APIRouter()
+
+
+def build_filter_conditions(
+    organization: Optional[str] = None,
+    category: Optional[str] = None,
+    grade: Optional[str] = None,
+    location: Optional[str] = None,
+    education_level: Optional[str] = None,
+    min_experience: Optional[int] = None,
+    max_experience: Optional[int] = None,
+    remote_eligible: Optional[bool] = None,
+    keywords: Optional[str] = None,
+):
+    """Build filter conditions for job queries."""
+    conditions = [Job.is_active == True]
+    
+    if organization:
+        conditions.append(Job.organization == organization)
+    
+    if category:
+        conditions.append(Job.category == category)
+    
+    if grade:
+        conditions.append(Job.grade == grade)
+    
+    if location:
+        # Optimize ILIKE: use prefix pattern when possible
+        if location and not location.startswith('%'):
+            # Can use index if it's a prefix search
+            conditions.append(Job.location.ilike(f"{location}%"))
+        else:
+            conditions.append(Job.location.ilike(f"%{location}%"))
+    
+    if education_level:
+        conditions.append(Job.education_level == education_level)
+    
+    if min_experience is not None:
+        conditions.append(Job.years_of_experience >= min_experience)
+    
+    if max_experience is not None:
+        conditions.append(Job.years_of_experience <= max_experience)
+    
+    if remote_eligible is not None:
+        if remote_eligible:
+            conditions.append(Job.remote_eligible.ilike("%yes%"))
+        else:
+            conditions.append(Job.remote_eligible.ilike("%no%"))
+    
+    if keywords:
+        search_pattern = f"%{keywords}%"
+        # Use OR conditions for keyword search across multiple fields
+        conditions.append(
+            or_(
+                Job.title.ilike(search_pattern),
+                Job.description.ilike(search_pattern),
+                Job.responsibilities.ilike(search_pattern),
+                Job.qualifications.ilike(search_pattern),
+                Job.organization.ilike(search_pattern)
+            )
+        )
+    
+    return conditions
 
 
 @router.get("/", response_model=dict)
@@ -46,93 +108,27 @@ async def list_jobs(
     - sort_by: created_at (default), deadline, posted_date, title
     - sort_order: desc (default), asc
     """
-    # Build query
-    query = select(Job).where(Job.is_active == True)
-
-    if organization:
-        query = query.where(Job.organization == organization)
-
-    if category:
-        query = query.where(Job.category == category)
-
-    if grade:
-        query = query.where(Job.grade == grade)
-
-    if location:
-        query = query.where(Job.location.ilike(f"%{location}%"))
-
-    if education_level:
-        query = query.where(Job.education_level == education_level)
-
-    if min_experience is not None:
-        query = query.where(Job.years_of_experience >= min_experience)
-
-    if max_experience is not None:
-        query = query.where(Job.years_of_experience <= max_experience)
-
-    if remote_eligible is not None:
-        if remote_eligible:
-            query = query.where(Job.remote_eligible.ilike("%yes%"))
-        else:
-            query = query.where(Job.remote_eligible.ilike("%no%"))
-
-    if keywords:
-        search_pattern = f"%{keywords}%"
-        query = query.where(
-            or_(
-                Job.title.ilike(search_pattern),
-                Job.description.ilike(search_pattern),
-                Job.responsibilities.ilike(search_pattern),
-                Job.qualifications.ilike(search_pattern),
-                Job.organization.ilike(search_pattern)
-            )
-        )
-
-    # Count total
-    count_query = select(func.count(Job.id)).where(Job.is_active == True)
-
-    if organization:
-        count_query = count_query.where(Job.organization == organization)
-
-    if category:
-        count_query = count_query.where(Job.category == category)
-
-    if grade:
-        count_query = count_query.where(Job.grade == grade)
-
-    if location:
-        count_query = count_query.where(Job.location.ilike(f"%{location}%"))
-
-    if education_level:
-        count_query = count_query.where(Job.education_level == education_level)
-
-    if min_experience is not None:
-        count_query = count_query.where(Job.years_of_experience >= min_experience)
-
-    if max_experience is not None:
-        count_query = count_query.where(Job.years_of_experience <= max_experience)
-
-    if remote_eligible is not None:
-        if remote_eligible:
-            count_query = count_query.where(Job.remote_eligible.ilike("%yes%"))
-        else:
-            count_query = count_query.where(Job.remote_eligible.ilike("%no%"))
-
-    if keywords:
-        search_pattern = f"%{keywords}%"
-        count_query = count_query.where(
-            or_(
-                Job.title.ilike(search_pattern),
-                Job.description.ilike(search_pattern),
-                Job.responsibilities.ilike(search_pattern),
-                Job.qualifications.ilike(search_pattern),
-                Job.organization.ilike(search_pattern)
-            )
-        )
-
+    # Build filter conditions once
+    filter_conditions = build_filter_conditions(
+        organization=organization,
+        category=category,
+        grade=grade,
+        location=location,
+        education_level=education_level,
+        min_experience=min_experience,
+        max_experience=max_experience,
+        remote_eligible=remote_eligible,
+        keywords=keywords
+    )
+    
+    # Count query - use the same filter conditions
+    count_query = select(func.count(Job.id)).where(*filter_conditions)
     total_result = await db.execute(count_query)
     total = total_result.scalar()
 
+    # Main query
+    query = select(Job).where(*filter_conditions)
+    
     # Sorting
     sort_column = getattr(Job, sort_by)
     if sort_order == "asc":
@@ -143,6 +139,7 @@ async def list_jobs(
     # Paginate
     query = query.offset((page - 1) * page_size).limit(page_size)
 
+    # Execute query
     result = await db.execute(query)
     jobs = result.scalars().all()
 
@@ -170,31 +167,50 @@ async def get_job(job_id: int, db: AsyncSession = Depends(get_db)):
 @router.get("/filters/options", response_model=dict)
 async def get_filter_options(db: AsyncSession = Depends(get_db)):
     """Get available filter options."""
+    # Build base query for active jobs only
+    base_query = select(Job).where(Job.is_active == True)
+    
     # Get unique values for each filter field
+    # Using distinct() with .all() for better performance
     organizations_result = await db.execute(
-        select(Job.organization).distinct().where(Job.is_active == True).order_by(Job.organization)
+        select(distinct(Job.organization))
+        .where(Job.is_active == True)
+        .where(Job.organization.isnot(None))
+        .order_by(Job.organization)
     )
-    organizations = [row[0] for row in organizations_result.all() if row[0]]
+    organizations = [row[0] for row in organizations_result.all()]
 
     categories_result = await db.execute(
-        select(Job.category).distinct().where(Job.is_active == True).order_by(Job.category)
+        select(distinct(Job.category))
+        .where(Job.is_active == True)
+        .where(Job.category.isnot(None))
+        .order_by(Job.category)
     )
-    categories = [row[0] for row in categories_result.all() if row[0]]
+    categories = [row[0] for row in categories_result.all()]
 
     grades_result = await db.execute(
-        select(Job.grade).distinct().where(Job.is_active == True).order_by(Job.grade)
+        select(distinct(Job.grade))
+        .where(Job.is_active == True)
+        .where(Job.grade.isnot(None))
+        .order_by(Job.grade)
     )
-    grades = [row[0] for row in grades_result.all() if row[0]]
+    grades = [row[0] for row in grades_result.all()]
 
     locations_result = await db.execute(
-        select(Job.location).distinct().where(Job.is_active == True).order_by(Job.location)
+        select(distinct(Job.location))
+        .where(Job.is_active == True)
+        .where(Job.location.isnot(None))
+        .order_by(Job.location)
     )
-    locations = [row[0] for row in locations_result.all() if row[0]]
+    locations = [row[0] for row in locations_result.all()]
 
     education_levels_result = await db.execute(
-        select(Job.education_level).distinct().where(Job.is_active == True).order_by(Job.education_level)
+        select(distinct(Job.education_level))
+        .where(Job.is_active == True)
+        .where(Job.education_level.isnot(None))
+        .order_by(Job.education_level)
     )
-    education_levels = [row[0] for row in education_levels_result.all() if row[0]]
+    education_levels = [row[0] for row in education_levels_result.all()]
 
     # Get experience range
     experience_result = await db.execute(
