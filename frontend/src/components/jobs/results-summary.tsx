@@ -2,15 +2,15 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Grid3x3, List, X } from "lucide-react";
+import { Grid3x3, List, X, LayoutGrid } from "lucide-react";
 
 interface ResultsSummaryProps {
   total: number;
   currentPage: number;
   pageSize: number;
   totalPages: number;
-  viewMode: "list" | "grid";
-  onViewModeChange: (mode: "list" | "grid") => void;
+  viewMode: "list" | "grid" | "masonry";
+  onViewModeChange: (mode: "list" | "grid" | "masonry") => void;
   activeFiltersCount: number;
   hasSearchTerm: boolean;
   onClearFilters: () => void;
@@ -61,6 +61,14 @@ export function ResultsSummary({
               className="h-8"
             >
               <Grid3x3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "masonry" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => onViewModeChange("masonry")}
+              className="h-8"
+            >
+              <LayoutGrid className="h-4 w-4" />
             </Button>
           </div>
           {(hasSearchTerm || activeFiltersCount > 0) && (

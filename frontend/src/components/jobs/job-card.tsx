@@ -21,7 +21,7 @@ interface JobCardProps {
     deadline?: string;
     apply_url?: string;
   };
-  viewMode?: "list" | "grid";
+  viewMode?: "list" | "grid" | "masonry";
 }
 
 export function JobCard({ job, viewMode = "list" }: JobCardProps) {
@@ -34,10 +34,12 @@ export function JobCard({ job, viewMode = "list" }: JobCardProps) {
     return gradePattern.test(grade.trim());
   };
 
+  const isCardMode = viewMode === "grid" || viewMode === "masonry";
+  
   return (
-    <Card className="transition-shadow hover:shadow-md">
+    <Card className={`transition-shadow hover:shadow-md ${viewMode === "masonry" ? "masonry-card" : ""}`}>
       <CardHeader>
-        <div className={`flex items-start justify-between ${viewMode === "grid" ? "flex-col gap-2" : ""}`}>
+        <div className={`flex items-start justify-between ${isCardMode ? "flex-col gap-2" : ""}`}>
           <div className="flex-1">
             <CardTitle className="mb-2">
               <Link
@@ -65,10 +67,10 @@ export function JobCard({ job, viewMode = "list" }: JobCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className={`mb-4 text-sm text-muted-foreground ${viewMode === "grid" ? "line-clamp-3" : "line-clamp-2"}`}>
+        <p className={`mb-4 text-sm text-muted-foreground ${isCardMode ? "line-clamp-3" : "line-clamp-2"}`}>
           {job.description}
         </p>
-        <div className={`flex flex-wrap gap-x-4 gap-y-2 text-sm ${viewMode === "grid" ? "flex-col" : ""}`}>
+        <div className={`flex flex-wrap gap-x-4 gap-y-2 text-sm ${isCardMode ? "flex-col" : ""}`}>
           {job.location && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <MapPin className="h-4 w-4 flex-shrink-0" />
@@ -106,7 +108,7 @@ export function JobCard({ job, viewMode = "list" }: JobCardProps) {
             </div>
           )}
         </div>
-        {viewMode === "grid" && (
+        {isCardMode && (
           <div className="mt-4 pt-4 border-t">
             <Link href={`/jobs/${job.id}`}>
               <Button variant="outline" size="sm" className="w-full">

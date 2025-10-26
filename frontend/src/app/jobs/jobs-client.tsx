@@ -30,7 +30,7 @@ export function JobsClient() {
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "created_at");
   const [sortOrder, setSortOrder] = useState(searchParams.get("order") || "desc");
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "masonry">("masonry");
 
   // Update URL when filters change
   useEffect(() => {
@@ -230,7 +230,7 @@ export function JobsClient() {
             pageSize={20}
             totalPages={data.total_pages}
             viewMode={viewMode}
-            onViewModeChange={setViewMode}
+            onViewModeChange={(mode: "list" | "grid" | "masonry") => setViewMode(mode)}
             activeFiltersCount={activeFiltersCount}
             hasSearchTerm={!!searchTerm}
             onClearFilters={clearFilters}
@@ -253,9 +253,17 @@ export function JobsClient() {
             onShare={shareSearch}
           />
 
-          <div className={viewMode === "grid" ? "grid gap-6 md:grid-cols-2 lg:grid-cols-3" : "space-y-4"}>
+          <div className={
+            viewMode === "masonry" 
+              ? "masonry" 
+              : viewMode === "grid" 
+                ? "grid gap-6 md:grid-cols-2 lg:grid-cols-3" 
+                : "space-y-4"
+          }>
             {data.jobs.map((job) => (
-              <JobCard key={job.id} job={job} viewMode={viewMode} />
+              <div key={job.id} className={viewMode === "masonry" ? "masonry-item" : ""}>
+                <JobCard job={job} viewMode={viewMode as "list" | "grid" | "masonry"} />
+              </div>
             ))}
           </div>
 
