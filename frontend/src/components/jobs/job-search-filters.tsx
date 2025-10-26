@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Filter, X, ArrowUpDown } from "lucide-react";
 
 interface FilterOptions {
@@ -32,8 +33,10 @@ interface JobSearchFiltersProps {
   setMinExperience: (exp: string) => void;
   maxExperience: string;
   setMaxExperience: (exp: string) => void;
-  contractType: string;
-  setContractType: (type: string) => void;
+  selectedContractTypes: string[];
+  setSelectedContractTypes: (types: string[]) => void;
+  excludedContractTypes: string[];
+  setExcludedContractTypes: (types: string[]) => void;
   sortBy: string;
   setSortBy: (sort: string) => void;
   sortOrder: string;
@@ -64,8 +67,10 @@ export function JobSearchFilters({
   setMinExperience,
   maxExperience,
   setMaxExperience,
-  contractType,
-  setContractType,
+  selectedContractTypes,
+  setSelectedContractTypes,
+  excludedContractTypes,
+  setExcludedContractTypes,
   sortBy,
   setSortBy,
   sortOrder,
@@ -76,7 +81,7 @@ export function JobSearchFilters({
   onSearch,
   onClearFilters,
 }: JobSearchFiltersProps) {
-  const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience, contractType].filter(Boolean).length;
+  const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience].filter(Boolean).length + selectedContractTypes.length + excludedContractTypes.length;
 
   return (
     <div className="mb-8 rounded-lg border bg-card p-6">
@@ -255,20 +260,65 @@ export function JobSearchFilters({
             </div>
 
             {/* Contract Type Filter */}
-            <div>
+            <div className="md:col-span-2">
               <label className="mb-2 block text-sm font-medium">Contract Type</label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={contractType}
-                onChange={(e) => setContractType(e.target.value)}
-              >
-                <option value="">All Types</option>
-                <option value="Fixed-term">Fixed-term</option>
-                <option value="Temporary">Temporary</option>
-                <option value="Consultant">Consultant</option>
-                <option value="Intern">Intern</option>
-                <option value="Staff">Staff</option>
-              </select>
+              <div className="space-y-3">
+                {/* Include Section */}
+                <div>
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">Including (select multiple)</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["Fixed-term", "Temporary", "Consultant", "Intern", "Staff"].map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`include-${type}`}
+                          checked={selectedContractTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedContractTypes([...selectedContractTypes, type]);
+                            } else {
+                              setSelectedContractTypes(selectedContractTypes.filter(t => t !== type));
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`include-${type}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {type}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Exclude Section */}
+                <div>
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">Excluding (select multiple)</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["Fixed-term", "Temporary", "Consultant", "Intern", "Staff"].map((type) => (
+                      <div key={type} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`exclude-${type}`}
+                          checked={excludedContractTypes.includes(type)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setExcludedContractTypes([...excludedContractTypes, type]);
+                            } else {
+                              setExcludedContractTypes(excludedContractTypes.filter(t => t !== type));
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`exclude-${type}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {type}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 """Job listing routes."""
+import re
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, distinct
@@ -23,6 +24,8 @@ def build_filter_conditions(
     max_experience: Optional[int] = None,
     remote_eligible: Optional[bool] = None,
     keywords: Optional[str] = None,
+    contract_types: Optional[List[str]] = None,
+    exclude_contract_types: Optional[List[str]] = None,
 ):
     """Build filter conditions for job queries."""
     conditions = [Job.is_active == True]
@@ -72,6 +75,14 @@ def build_filter_conditions(
             )
         )
     
+    # Multi-select contract types
+    if contract_types and len(contract_types) > 0:
+        conditions.append(Job.contract_type.in_(contract_types))
+    
+    # Exclude contract types
+    if exclude_contract_types and len(exclude_contract_types) > 0:
+        conditions.append(~Job.contract_type.in_(exclude_contract_types))
+    
     return conditions
 
 
@@ -88,6 +99,8 @@ async def list_jobs(
     max_experience: Optional[int] = None,
     remote_eligible: Optional[bool] = None,
     keywords: Optional[str] = None,
+    contract_types: Optional[List[str]] = Query(None),
+    exclude_contract_types: Optional[List[str]] = Query(None),
     sort_by: Optional[str] = Query("created_at", regex="^(created_at|deadline|posted_date|title)$"),
     sort_order: Optional[str] = Query("desc", regex="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db)
@@ -118,7 +131,9 @@ async def list_jobs(
         min_experience=min_experience,
         max_experience=max_experience,
         remote_eligible=remote_eligible,
-        keywords=keywords
+        keywords=keywords,
+        contract_types=contract_types,
+        exclude_contract_types=exclude_contract_types
     )
     
     # Count query - use the same filter conditions
@@ -192,9 +207,27 @@ async def get_filter_options(db: AsyncSession = Depends(get_db)):
         select(distinct(Job.grade))
         .where(Job.is_active == True)
         .where(Job.grade.isnot(None))
+        .where(Job.grade.notilike('%day%'))
+        .where(Job.grade.notilike('%monday%'))
+        .where(Job.grade.notilike('%tuesday%'))
+        .where(Job.grade.notilike('%wednesday%'))
+        .where(Job.grade.notilike('%thursday%'))
+        .where(Job.grade.notilike('%friday%'))
+        .where(Job.grade.notilike('%saturday%'))
+        .where(Job.grade.notilike('%sunday%'))
+        .where(Job.grade.notilike('%november%'))
+        .where(Job.grade.notilike('%october%'))
+        .where(Job.grade.notilike('%december%'))
+        .where(Job.grade.notilike('%january%'))
         .order_by(Job.grade)
     )
     grades = [row[0] for row in grades_result.all()]
+    
+    # Filter out dates and invalid grades
+    grades = [
+        grade for grade in grades 
+        if re.match(r'^[A-Z0-9-]+$', grade) and len(grade) <= 20
+    ]
 
     locations_result = await db.execute(
         select(distinct(Job.location))

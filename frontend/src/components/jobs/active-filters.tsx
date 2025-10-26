@@ -13,7 +13,8 @@ interface ActiveFiltersProps {
   educationLevel: string;
   minExperience: string;
   maxExperience: string;
-  contractType: string;
+  selectedContractTypes: string[];
+  excludedContractTypes: string[];
   onRemoveFilter: (filterType: string) => void;
   onClearAll: () => void;
   onShare: () => void;
@@ -28,12 +29,13 @@ export function ActiveFilters({
   educationLevel,
   minExperience,
   maxExperience,
-  contractType,
+  selectedContractTypes,
+  excludedContractTypes,
   onRemoveFilter,
   onClearAll,
   onShare,
 }: ActiveFiltersProps) {
-  const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience, contractType].filter(Boolean).length;
+  const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience].filter(Boolean).length + selectedContractTypes.length + excludedContractTypes.length;
 
   return (
     <div className="mb-6 rounded-lg border bg-muted/50 p-4">
@@ -66,7 +68,7 @@ export function ActiveFilters({
       </div>
 
       {/* Active Filters Display */}
-      {(searchTerm || organization || category || grade || location || educationLevel || minExperience || maxExperience) && (
+      {(searchTerm || organization || category || grade || location || educationLevel || minExperience || maxExperience || selectedContractTypes.length > 0 || excludedContractTypes.length > 0) && (
         <div className="mt-3 flex flex-wrap gap-2 border-t pt-3">
           {searchTerm && (
             <Badge variant="outline" className="gap-1">
@@ -156,9 +158,20 @@ export function ActiveFilters({
               </button>
             </Badge>
           )}
-          {contractType && (
+          {selectedContractTypes.length > 0 && (
             <Badge variant="outline" className="gap-1">
-              Contract: {contractType}
+              Contract (Including): {selectedContractTypes.join(", ")}
+              <button
+                onClick={() => onRemoveFilter("contractType")}
+                className="ml-1 hover:text-destructive"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
+          {excludedContractTypes.length > 0 && (
+            <Badge variant="outline" className="gap-1 bg-destructive/10">
+              Contract (Excluding): {excludedContractTypes.join(", ")}
               <button
                 onClick={() => onRemoveFilter("contractType")}
                 className="ml-1 hover:text-destructive"

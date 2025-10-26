@@ -154,11 +154,23 @@ class APIClient {
   }
 
   // Jobs endpoints
-  async getJobs(params?: Record<string, string | number>): Promise<JobsResponse> {
-    const queryString = params
-      ? "?" + new URLSearchParams(params as Record<string, string>).toString()
-      : "";
-    return this.request<JobsResponse>(`/api/jobs${queryString}`);
+  async getJobs(params?: Record<string, string | number | string[]>): Promise<JobsResponse> {
+    if (!params) {
+      return this.request<JobsResponse>(`/api/jobs`);
+    }
+    
+    // Build query string manually to handle arrays
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (Array.isArray(value)) {
+        // Add each array element as a separate parameter
+        value.forEach(item => searchParams.append(key, item));
+      } else if (value !== undefined && value !== null && value !== '') {
+        searchParams.set(key, String(value));
+      }
+    }
+    
+    return this.request<JobsResponse>(`/api/jobs?${searchParams.toString()}`);
   }
 
   async getJob(id: number): Promise<Job> {

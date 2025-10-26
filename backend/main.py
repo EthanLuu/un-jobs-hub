@@ -7,7 +7,8 @@ from contextlib import asynccontextmanager
 
 from config import settings
 from database import get_engine, Base
-from routers import auth, jobs, favorites, resume, match
+from routers import auth, jobs, favorites, resume, match, metrics
+from utils.monitoring import setup_monitoring
 # from routers import crawl  # Disabled for quick start
 
 
@@ -37,6 +38,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Setup monitoring and logging
+setup_monitoring(app)
+
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -52,6 +56,7 @@ app.include_router(jobs.router, prefix="/api/jobs", tags=["Jobs"])
 app.include_router(favorites.router, prefix="/api/favorites", tags=["Favorites"])
 app.include_router(resume.router, prefix="/api/resume", tags=["Resume"])
 app.include_router(match.router, prefix="/api/match", tags=["Matching"])
+app.include_router(metrics.router, prefix="/api", tags=["Metrics"])
 # app.include_router(crawl.router, prefix="/api/crawl", tags=["Crawler"])  # Disabled for quick start
 
 
@@ -65,13 +70,6 @@ async def root():
     }
 
 
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return JSONResponse(
-        content={"status": "healthy", "service": settings.app_name},
-        status_code=200
-    )
 
 
 if __name__ == "__main__":

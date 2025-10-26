@@ -10,6 +10,7 @@ from crawlers.un_careers_official_spider import crawl_un_careers_official_sync
 from crawlers.who_spider import crawl_who_sync
 from crawlers.fao_spider import crawl_fao_sync
 from crawlers.unops_spider import crawl_unops_sync
+from crawlers.ilo_spider import crawl_ilo_sync
 
 
 def main():
@@ -88,12 +89,23 @@ def main():
         results.append({'jobs_found': 0, 'jobs_saved': 0})
 
     # 7. UNOPS (United Nations Office for Project Services)
-    print("\n[7/7] 正在爬取 UNOPS 联合国项目事务厅...")
+    print("\n[7/8] 正在爬取 UNOPS 联合国项目事务厅...")
     print("-" * 60)
     try:
         result7 = crawl_unops_sync(max_jobs=20)
         print(f"✓ 完成: 发现 {result7['jobs_found']} 个职位, 保存 {result7['jobs_saved']} 个")
         results.append(result7)
+    except Exception as e:
+        print(f"✗ 失败: {str(e)}")
+        results.append({'jobs_found': 0, 'jobs_saved': 0})
+
+    # 8. ILO (International Labour Organization)
+    print("\n[8/8] 正在爬取 ILO 国际劳工组织...")
+    print("-" * 60)
+    try:
+        result8 = crawl_ilo_sync(max_jobs=20)
+        print(f"✓ 完成: 发现 {result8.get('total', 0)} 个职位, 保存 {result8.get('saved', 0)} 个")
+        results.append({'jobs_found': result8.get('total', 0), 'jobs_saved': result8.get('saved', 0)})
     except Exception as e:
         print(f"✗ 失败: {str(e)}")
         results.append({'jobs_found': 0, 'jobs_saved': 0})
@@ -113,6 +125,7 @@ def main():
     print("• WHO (世界卫生组织)")
     print("• FAO (联合国粮农组织)")
     print("• UNOPS (联合国项目事务厅)")
+    print("• ILO (国际劳工组织) - 新增")
     print("• UNDP (开发计划署) - 待完善")
     print("• UNICEF (儿童基金会) - 待完善")
     print("=" * 60)

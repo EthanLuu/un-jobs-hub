@@ -26,7 +26,12 @@ export function JobsClient() {
   const [educationLevel, setEducationLevel] = useState(searchParams.get("edu") || "");
   const [minExperience, setMinExperience] = useState(searchParams.get("minExp") || "");
   const [maxExperience, setMaxExperience] = useState(searchParams.get("maxExp") || "");
-  const [contractType, setContractType] = useState(searchParams.get("contract") || "");
+  const [selectedContractTypes, setSelectedContractTypes] = useState<string[]>(
+    searchParams.get("contract")?.split(",").filter(Boolean) || []
+  );
+  const [excludedContractTypes, setExcludedContractTypes] = useState<string[]>(
+    searchParams.get("exclude_contract")?.split(",").filter(Boolean) || []
+  );
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "created_at");
   const [sortOrder, setSortOrder] = useState(searchParams.get("order") || "desc");
   const [showFilters, setShowFilters] = useState(false);
@@ -44,14 +49,15 @@ export function JobsClient() {
     if (educationLevel) params.set("edu", educationLevel);
     if (minExperience) params.set("minExp", minExperience);
     if (maxExperience) params.set("maxExp", maxExperience);
-    if (contractType) params.set("contract", contractType);
+    if (selectedContractTypes.length > 0) params.set("contract", selectedContractTypes.join(","));
+    if (excludedContractTypes.length > 0) params.set("exclude_contract", excludedContractTypes.join(","));
     if (sortBy !== "created_at") params.set("sort", sortBy);
     if (sortOrder !== "desc") params.set("order", sortOrder);
 
     const queryString = params.toString();
     const newUrl = queryString ? `/jobs?${queryString}` : "/jobs";
     router.replace(newUrl, { scroll: false });
-  }, [page, searchTerm, organization, category, grade, location, educationLevel, minExperience, maxExperience, contractType, sortBy, sortOrder, router]);
+  }, [page, searchTerm, organization, category, grade, location, educationLevel, minExperience, maxExperience, selectedContractTypes, excludedContractTypes, sortBy, sortOrder, router]);
 
   const params: Record<string, string | number> = {
     page,
@@ -68,7 +74,12 @@ export function JobsClient() {
   if (educationLevel) params.education_level = educationLevel;
   if (minExperience) params.min_experience = parseInt(minExperience);
   if (maxExperience) params.max_experience = parseInt(maxExperience);
-  if (contractType) params.contract_type = contractType;
+  if (selectedContractTypes.length > 0) {
+    params.contract_types = selectedContractTypes;
+  }
+  if (excludedContractTypes.length > 0) {
+    params.exclude_contract_types = excludedContractTypes;
+  }
 
   const { data, error, isLoading } = useSWR(
     JSON.stringify(params),
@@ -96,7 +107,8 @@ export function JobsClient() {
     setEducationLevel("");
     setMinExperience("");
     setMaxExperience("");
-    setContractType("");
+    setSelectedContractTypes([]);
+    setExcludedContractTypes([]);
     setPage(1);
   };
 
@@ -111,7 +123,7 @@ export function JobsClient() {
     }
   };
 
-  const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience, contractType].filter(Boolean).length;
+  const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience].filter(Boolean).length + selectedContractTypes.length + excludedContractTypes.length;
 
   const handleRemoveFilter = (filterType: string) => {
     switch (filterType) {
@@ -141,7 +153,8 @@ export function JobsClient() {
         setMaxExperience("");
         break;
       case "contractType":
-        setContractType("");
+        setSelectedContractTypes([]);
+        setExcludedContractTypes([]);
         break;
     }
     setPage(1);
@@ -176,8 +189,10 @@ export function JobsClient() {
         setMinExperience={setMinExperience}
         maxExperience={maxExperience}
         setMaxExperience={setMaxExperience}
-        contractType={contractType}
-        setContractType={setContractType}
+        selectedContractTypes={selectedContractTypes}
+        setSelectedContractTypes={setSelectedContractTypes}
+        excludedContractTypes={excludedContractTypes}
+        setExcludedContractTypes={setExcludedContractTypes}
         sortBy={sortBy}
         setSortBy={setSortBy}
         sortOrder={sortOrder}
@@ -247,7 +262,8 @@ export function JobsClient() {
             educationLevel={educationLevel}
             minExperience={minExperience}
             maxExperience={maxExperience}
-            contractType={contractType}
+            selectedContractTypes={selectedContractTypes}
+            excludedContractTypes={excludedContractTypes}
             onRemoveFilter={handleRemoveFilter}
             onClearAll={clearFilters}
             onShare={shareSearch}
