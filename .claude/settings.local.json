@@ -28,7 +28,10 @@
       "Bash(curl:*)",
       "Bash(find:*)",
       "Bash(chmod:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "WebFetch(domain:www.wfp.org)",
+      "WebFetch(domain:jobs.wfp.org)",
+      "WebFetch(domain:wd3.myworkdaysite.com)"
     ],
     "deny": [],
     "ask": []

@@ -102,7 +102,6 @@ Include the token in the Authorization header: `Bearer <token>`
 For issues or questions, please open an issue on [GitHub](https://github.com/EthanLuu/un-jobs-hub).
     """,
     summary="UN Jobs Hub - Aggregating UN job postings worldwide",
-    version=settings.app_version,
     terms_of_service="https://github.com/EthanLuu/un-jobs-hub/blob/main/TERMS.md",
     contact={
         "name": "UN Jobs Hub Team",
