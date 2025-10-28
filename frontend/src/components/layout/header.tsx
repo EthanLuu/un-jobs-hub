@@ -1,9 +1,9 @@
 "use client";
 
-import { Link, usePathname, useRouter } from '@/i18n/navigation';
-import { useLocale } from 'next-intl';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Globe, LogOut, User, Languages } from "lucide-react";
+import { Globe, LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
@@ -18,20 +18,6 @@ export function Header() {
   const { user, logout, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const locale = useLocale();
-
-  const handleLanguageChange = (newLocale: string) => {
-    if (newLocale === locale) return;
-    
-    // 获取当前路径（不含 locale 前缀）
-    const currentPath = pathname || '/';
-    
-    // 构建新的 URL
-    const newUrl = `/${newLocale}${currentPath}`;
-    
-    // 使用 window.location 来刷新整个页面并切换语言
-    window.location.href = newUrl;
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -60,28 +46,6 @@ export function Header() {
         </nav>
 
         <div className="flex items-center space-x-4">
-          {/* Language Switcher */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
-                <Languages className="h-4 w-4" />
-                <span className="sr-only">Change language</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem 
-                onClick={() => handleLanguageChange('zh')}
-              >
-                中文
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleLanguageChange('en')}
-              >
-                English
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {isLoading ? (
             <div className="h-9 w-20 animate-pulse rounded-md bg-muted" />
           ) : user ? (

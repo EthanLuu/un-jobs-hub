@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Calendar, Briefcase, CheckCircle, AlertCircle } from "lucide-react";
-import { Link } from '@/i18n/navigation';
+import Link from 'next/link';
 import { formatDate, getDaysUntilDeadline } from "@/lib/utils";
 
 interface MatchResponse {

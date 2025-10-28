@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { api, Job } from "@/lib/api";
 import { Sparkles, AlertCircle, TrendingUp, FileText } from "lucide-react";
-import { Link } from '@/i18n/navigation';
+import Link from 'next/link';
 import { RecommendationCard } from "@/components/recommendations/recommendation-card";
 import { ResumeInfo } from "@/components/recommendations/resume-info";
 

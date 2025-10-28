@@ -20,7 +20,7 @@ import {
   GraduationCap,
   TrendingUp,
 } from "lucide-react";
-import { Link } from '@/i18n/navigation';
+import Link from 'next/link';
 import { formatDate, getDaysUntilDeadline } from "@/lib/utils";
 
 interface JobDetailClientProps {

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Link } from '@/i18n/navigation';
-import { useTranslations } from "next-intl";
+import Link from 'next/link';
+import { t } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,6 @@ export function RegisterClient() {
   const router = useRouter();
   const { register } = useAuth();
   const { toast } = useToast();
-  const t = useTranslations();
   
   const [formData, setFormData] = useState({
     email: "",

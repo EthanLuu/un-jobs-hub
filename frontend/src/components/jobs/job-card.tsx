@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, Briefcase, GraduationCap, TrendingUp } from "lucide-react";
-import { Link } from '@/i18n/navigation';
+import Link from 'next/link';
 import { formatDate, getDaysUntilDeadline } from "@/lib/utils";
 
 interface JobCardProps {

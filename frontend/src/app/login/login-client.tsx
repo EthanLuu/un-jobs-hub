@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Link } from '@/i18n/navigation';
-import { useTranslations } from "next-intl";
+import Link from 'next/link';
+import { t } from "@/lib/translations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,6 @@ export function LoginClient() {
   const router = useRouter();
   const { login } = useAuth();
   const { toast } = useToast();
-  const t = useTranslations();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

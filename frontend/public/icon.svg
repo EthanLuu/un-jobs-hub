@@ -1,0 +1,48 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#0066CC"/>
+
+  <!-- UN Laurel Wreath (Simplified) -->
+  <g stroke="#FFFFFF" stroke-width="8" fill="none">
+    <!-- Left Laurel -->
+    <path d="M 160 400 Q 140 350 135 300 Q 132 250 140 200 Q 145 150 160 110" stroke-linecap="round"/>
+    <path d="M 160 380 L 140 370" stroke-linecap="round"/>
+    <path d="M 155 340 L 135 335" stroke-linecap="round"/>
+    <path d="M 150 300 L 130 300" stroke-linecap="round"/>
+    <path d="M 148 260 L 128 265" stroke-linecap="round"/>
+    <path d="M 150 220 L 130 230" stroke-linecap="round"/>
+    <path d="M 155 180 L 140 195" stroke-linecap="round"/>
+    <path d="M 160 140 L 150 160" stroke-linecap="round"/>
+
+    <!-- Right Laurel -->
+    <path d="M 352 400 Q 372 350 377 300 Q 380 250 372 200 Q 367 150 352 110" stroke-linecap="round"/>
+    <path d="M 352 380 L 372 370" stroke-linecap="round"/>
+    <path d="M 357 340 L 377 335" stroke-linecap="round"/>
+    <path d="M 362 300 L 382 300" stroke-linecap="round"/>
+    <path d="M 364 260 L 384 265" stroke-linecap="round"/>
+    <path d="M 362 220 L 382 230" stroke-linecap="round"/>
+    <path d="M 357 180 L 372 195" stroke-linecap="round"/>
+    <path d="M 352 140 L 362 160" stroke-linecap="round"/>
+  </g>
+
+  <!-- Globe Lines -->
+  <g stroke="#FFFFFF" stroke-width="6" fill="none" opacity="0.4">
+    <circle cx="256" cy="256" r="90"/>
+    <ellipse cx="256" cy="256" rx="90" ry="40"/>
+    <line x1="256" y1="166" x2="256" y2="346"/>
+    <line x1="166" y1="256" x2="346" y2="256"/>
+  </g>
+
+  <!-- Briefcase Icon (Job Symbol) -->
+  <g fill="#FFFFFF">
+    <!-- Briefcase Body -->
+    <rect x="210" y="240" width="92" height="70" rx="6"/>
+    <!-- Briefcase Handle -->
+    <path d="M 230 240 L 230 220 Q 230 210 240 210 L 272 210 Q 282 210 282 220 L 282 240" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+    <!-- Briefcase Lock -->
+    <rect x="248" y="260" width="16" height="20" rx="2"/>
+  </g>
+
+  <!-- Text "UN" -->
+  <text x="256" y="200" font-family="Arial, sans-serif" font-size="64" font-weight="bold" fill="#FFFFFF" text-anchor="middle">UN</text>
+</svg>
