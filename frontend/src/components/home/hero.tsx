@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -19,23 +20,58 @@ export function Hero() {
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-primary/10 via-primary/5 to-background py-20 md:py-32">
       <div className="container relative z-10">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+        <motion.div
+          className="mx-auto max-w-3xl text-center"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.h1
+            className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl"
+            variants={itemVariants}
+          >
             Find Your Dream Job in the{" "}
-            <span className="text-primary">UN System</span>
-          </h1>
-          <p className="mb-8 text-lg text-muted-foreground md:text-xl">
+            <span className="text-primary bg-clip-text">UN System</span>
+          </motion.h1>
+          <motion.p
+            className="mb-8 text-lg text-muted-foreground md:text-xl"
+            variants={itemVariants}
+          >
             Search and apply to thousands of positions across UN, UNDP, UNICEF,
             WHO, FAO, and more. Get AI-powered job matching and personalized
             recommendations.
-          </p>
+          </motion.p>
 
-          <form
+          <motion.form
             onSubmit={handleSearch}
             className="mx-auto flex max-w-2xl gap-2"
+            variants={itemVariants}
           >
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
@@ -50,9 +86,12 @@ export function Hero() {
             <Button type="submit" size="lg" className="h-12">
               Search Jobs
             </Button>
-          </form>
+          </motion.form>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+          <motion.div
+            className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground"
+            variants={itemVariants}
+          >
             <span>Popular searches:</span>
             <Button
               variant="link"
@@ -84,13 +123,24 @@ export function Hero() {
             >
               Finance
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* Decorative elements */}
       <div className="absolute inset-0 -z-10 opacity-20">
-        <div className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary blur-3xl" />
+        <motion.div
+          className="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
       </div>
     </section>
   );

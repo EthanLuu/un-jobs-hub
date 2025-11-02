@@ -1,8 +1,10 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BookmarkButton } from "@/components/jobs/bookmark-button";
 import { MapPin, Calendar, Briefcase, GraduationCap, TrendingUp } from "lucide-react";
 import Link from 'next/link';
 import { formatDate, getDaysUntilDeadline } from "@/lib/utils";
@@ -35,20 +37,29 @@ export function JobCard({ job, viewMode = "list" }: JobCardProps) {
   };
 
   const isCardMode = viewMode === "grid" || viewMode === "masonry";
-  
+
   return (
-    <Card className={`transition-shadow hover:shadow-md ${viewMode === "masonry" ? "masonry-card" : ""}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -4 }}
+    >
+      <Card className={`transition-shadow hover:shadow-md ${viewMode === "masonry" ? "masonry-card" : ""} h-full`}>
       <CardHeader>
-        <div className={`flex items-start justify-between ${isCardMode ? "flex-col gap-2" : ""}`}>
+        <div className={`flex items-start justify-between gap-2 ${isCardMode ? "flex-col" : ""}`}>
           <div className="flex-1">
-            <CardTitle className="mb-2">
-              <Link
-                href={`/jobs/${job.id}`}
-                className="hover:text-primary line-clamp-2"
-              >
-                {job.title}
-              </Link>
-            </CardTitle>
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="mb-2 flex-1">
+                <Link
+                  href={`/jobs/${job.id}`}
+                  className="hover:text-primary line-clamp-2"
+                >
+                  {job.title}
+                </Link>
+              </CardTitle>
+              <BookmarkButton jobId={job.id} />
+            </div>
             <p className="text-sm font-medium text-primary">
               {job.organization}
             </p>
@@ -119,5 +130,6 @@ export function JobCard({ job, viewMode = "list" }: JobCardProps) {
         )}
       </CardContent>
     </Card>
+    </motion.div>
   );
 }

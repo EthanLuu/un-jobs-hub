@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Filter, X, ArrowUpDown } from "lucide-react";
+import { Search, Filter, X, ArrowUpDown, ChevronDown } from "lucide-react";
 
 interface FilterOptions {
   organizations?: string[];
@@ -84,7 +85,12 @@ export function JobSearchFilters({
   const activeFiltersCount = [organization, category, grade, location, educationLevel, minExperience, maxExperience].filter(Boolean).length + selectedContractTypes.length + excludedContractTypes.length;
 
   return (
-    <div className="mb-8 rounded-lg border bg-card p-6">
+    <motion.div
+      className="mb-8 rounded-lg border bg-card p-6 shadow-sm"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Search Bar */}
       <form onSubmit={onSearch} className="mb-4 flex gap-2">
         <div className="relative flex-1">
@@ -100,16 +106,22 @@ export function JobSearchFilters({
         <Button type="submit">Search</Button>
         <Button
           type="button"
-          variant="outline"
+          variant={showFilters ? "default" : "outline"}
           onClick={() => setShowFilters(!showFilters)}
+          className="relative"
         >
           <Filter className="mr-2 h-4 w-4" />
           Filters
           {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="ml-2">
+            <Badge variant="secondary" className="ml-2 animate-pulse">
               {activeFiltersCount}
             </Badge>
           )}
+          <ChevronDown
+            className={`ml-1 h-4 w-4 transition-transform ${
+              showFilters ? "rotate-180" : ""
+            }`}
+          />
         </Button>
       </form>
 
@@ -142,7 +154,7 @@ export function JobSearchFilters({
         <div className="ml-auto flex items-center gap-2">
           <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
           <select
-            className="rounded-md border border-input bg-background px-2 py-1 text-xs"
+            className="rounded-md border border-input bg-background px-2 py-1 text-xs transition-colors hover:bg-muted"
             value={`${sortBy}-${sortOrder}`}
             onChange={(e) => {
               const [newSortBy, newSortOrder] = e.target.value.split("-");
@@ -161,8 +173,15 @@ export function JobSearchFilters({
       </div>
 
       {/* Advanced Filters */}
-      {showFilters && (
-        <div className="space-y-4 border-t pt-4">
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            className="space-y-4 border-t pt-4"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Advanced Filters</h3>
             {activeFiltersCount > 0 && (
@@ -346,8 +365,9 @@ export function JobSearchFilters({
               </select>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
